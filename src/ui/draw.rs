@@ -1,5 +1,4 @@
-use crate::{App, InputMode};
-use crate::read_files::read_file;
+use crate::{files::File, App, AppState};
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Alignment},
@@ -22,8 +21,8 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .border_type(BorderType::Rounded)
     };
 
-    match app.input_mode {
-        InputMode::Normal => {
+    match app.app_mode {
+        AppState::Normal => {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .margin(2)
@@ -33,26 +32,29 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 ].as_ref())
                 .split(f.size());
 
-            app.text = read_file(
-                "D:\\Rust Projects\\softhex\\target\\debug\\test.txt".to_string()
-            ).unwrap();
-            app.hex = app.text.clone();
+            let test_file = File::new(
+                &"D:\\Rust Projects\\softhex\\target\\debug\\test.txt".to_string()
+            );
+            app.opened_files.push(test_file);
 
-            let paragraph = Paragraph::new(app.hex.clone())
+            let test_file = app.opened_files.get(0).unwrap();
+            let text: String = test_file.data.clone();
+
+            let paragraph = Paragraph::new(text.clone())
                 .block(create_block("HEX", Alignment::Center))
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
-                .scroll((app.scroll, 0));
+                .scroll((test_file.scroll, 0));
             f.render_widget(paragraph, chunks[0]);
 
-            let paragraph = Paragraph::new(app.text.clone())
+            let paragraph = Paragraph::new(text.clone())
                 .block(create_block("TEXT", Alignment::Center))
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
-                .scroll((app.scroll, 0));
+                .scroll((test_file.scroll, 0));
             f.render_widget(paragraph, chunks[1]);
         },
-        InputMode::FindInput => todo!("Сделать поиск"),
+        AppState::FindInput => todo!("Сделать поиск"),
         _ => todo!("Сделать поиск по элементам и редактирование текста и hex"),
     }
 }
