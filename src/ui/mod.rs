@@ -1,7 +1,7 @@
 mod draw;
 
 
-use crate::{App, InputMode};
+use crate::App;
 use draw::ui;
 use crossterm::event::{self, Event, KeyCode};
 use tui::{
@@ -19,28 +19,31 @@ pub fn run_app<B: Backend>(
         terminal.draw(|f| ui(f, &mut app))?;
 
         if let Event::Key(key) = event::read()? {
-            match app.input_mode {
-                InputMode::Normal => match key.code {
+            match app.app_mode {
+                AppState::Normal => match key.code {
                     KeyCode::Char('w') | KeyCode::Char('W') | KeyCode::Up => {
-                        app.move_down();
+                        let mut file = app.opened_files.get(0).unwrap();
+                        file.page_down();
                     },
                     KeyCode::Char('s') | KeyCode::Char('S') | KeyCode::Down => {
-                        app.move_up();
+                        let mut file = app.opened_files.get(0).unwrap();
+                        file.page_up();
                     },
                     KeyCode::Char('f') | KeyCode::Char('F') => {
-                        app.input_mode = InputMode::FindInput;
+                        app.app_mode = AppState::FindInput;
                     },
                     KeyCode::Char('q') | KeyCode::Char('Q') => {
                         return Ok(());
                     },
                     _ => {},
                 },
-                InputMode::FindInput => match key.code {
+                AppState::FindInput => match key.code {
                     KeyCode::Enter => {
-                        app.input_mode = InputMode::FindTextInput;
+                        app.app_mode = AppState::FindTextInput;
                         // TODO: 1
                     }
                     KeyCode::Char(c) => {
+                        let mut find_text = app.
                         app.input_find.push(c);
                         thread::sleep(time::Duration::from_millis(100));
                     }
@@ -48,13 +51,13 @@ pub fn run_app<B: Backend>(
                         app.input_find.pop();
                     }
                     KeyCode::Esc => {
-                        app.input_mode = InputMode::Normal;
+                        app.app_mode = AppState::Normal;
                     }
                     _ => {}
                 },
-                InputMode::FindTextInput => todo!("Сделать поиск по элементам"),
-                InputMode::EditingHex => todo!("Сделать рефактор hex"),
-                InputMode::EditingText => todo!("Сделать рефактор текста"),
+                AppState::FindTextInput => todo!("Сделать поиск по элементам"),
+                AppState::EditingHex => todo!("Сделать рефактор hex"),
+                AppState::EditingText => todo!("Сделать рефактор текста"),
             }
         }
     }
