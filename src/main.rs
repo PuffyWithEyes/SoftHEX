@@ -1,5 +1,5 @@
 mod ui;
-mod read_files;
+mod files;
 
 
 use ui::run_app;
@@ -13,50 +13,26 @@ use tui::{
     backend::CrosstermBackend,
     Terminal,
 };
+use files::File;
 
 
 const LINE_NUMBER: u16 = 1_u16;
-const CORRECT_OUTPUT: u16 = 10_u16;
-
-
-pub enum InputMode {
-    Normal,
-    FindInput,
-    FindTextInput,
-    EditingHex,
-    EditingText,
-}
+type TabIndex = usize;
 
 
 pub struct App {
-    input_find: String,
-    input_mode: InputMode,
-    hex: String,
-    text: String,
-    scroll: u16,
+    opened_files: Vec<File>,
+    tabs_titles: Vec<String>,
+    tabs_indexes: TabIndex,
 }
 
 
-impl App {
-    pub fn new() -> Self {
+impl Default for App {
+    fn default() -> Self {
         App {
-            input_find: String::new(),
-            input_mode: InputMode::Normal,
-            hex: String::new(),
-            text: String::new(),
-            scroll: 0,
-        }
-    }
-
-    pub fn move_down(&mut self) {
-        self.scroll += LINE_NUMBER;
-        self.scroll %= CORRECT_OUTPUT;
-    }
-
-    pub fn move_up(&mut self) {
-        if self.scroll != 0 {
-            self.scroll -= LINE_NUMBER;
-            self.scroll %= CORRECT_OUTPUT;
+            opened_files: Vec::new(),
+            tabs_titles: Vec::new(),
+            tabs_indexes: 0_usize,
         }
     }
 }
@@ -69,7 +45,7 @@ fn main() -> Result<(), Box<dyn Error>> {  // TODO: 2
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let app = App::new();
+    let app = App::default();
     let res = run_app(&mut terminal, app);
 
     disable_raw_mode()?;
