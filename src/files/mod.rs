@@ -1,10 +1,11 @@
 pub mod read;
 pub mod write;
+pub mod move_file;
 
 use read::read_file;
 
 
-type Path = String;
+pub type Path = String;
 type LineNumber = u16;
 type LineCounter = u16;
 
@@ -60,3 +61,4 @@ impl File {
         }
     }
 }
+
