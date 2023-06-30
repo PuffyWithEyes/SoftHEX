@@ -1,4 +1,4 @@
-use std::{fs, io::Write};
+use std::{fs, io::Write, path};
 use super::{Path, File};
 use uid::Id as IdT;
 
@@ -33,27 +33,27 @@ fn append_data_in_file(path: &Path, data: &String) {
 
 
 fn make_config_file_if_not_exist() {
-	let path = fs::metadata(CONFIG_PATH);
+	let path = path::Path::new(CONFIG_PATH);
 
-	if path.is_err() {
+	if !path.exists() {
 		fs::create_dir(CONFIG_PATH);
 	}
 
-	let path = fs::metadata(CONFIG_SOFTHEX_PATH);
+	let path = path::Path::new(CONFIG_SOFTHEX_PATH);
 
-	if path.is_err() {
+	if !path.exists() {
 		fs::create_dir(CONFIG_SOFTHEX_PATH);
 	}
 
-	let conf_file = fs::metadata(CONFIG_FILE_PATH);
+	let conf_file = path::Path::new(CONFIG_FILE_PATH);
 
-	if conf_file.is_err() {
+	if !conf_file.exists() {
 		write_in_file(&CONFIG_FILE_PATH.to_string(), &"".to_string());
 	}
 
-	let path = fs::metadata(CONFIG_OPENED_FILES_PATH);
+	let path = path::Path::new(CONFIG_OPENED_FILES_PATH);
 
-	if path.is_err() {
+	if !path.exists() {
 		fs::create_dir(CONFIG_OPENED_FILES_PATH);
 	}
 }
