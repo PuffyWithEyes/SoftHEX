@@ -7,7 +7,7 @@ const CONFIG_EXTENSION: &str = ".conf";
 const CONFIG_PATH: &str = "$HOME/.config/";
 const CONFIG_SOFTHEX_PATH: &str = "$HOME/.config/softhex/";
 const CONFIG_FILE_PATH: &str = "$HOME/.config/softhex/opened_files.conf/";
-const CONFIG_OPENED_FILES_PATH: &str = "$HOME/.config/softhex/opened_files/";
+pub const CONFIG_OPENED_FILES_PATH: &str = "$HOME/.config/softhex/opened_files/";
 
 
 struct T(());
