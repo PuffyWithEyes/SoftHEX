@@ -1,4 +1,4 @@
-use crate::{files::File, App, AppState};
+use crate::{files::File, App};
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Alignment},
