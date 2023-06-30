@@ -1,7 +1,6 @@
 mod ui;
 mod files;
 
-
 use ui::run_app;
 use crossterm::{
     event::EnableMouseCapture,
@@ -38,6 +37,7 @@ impl Default for App {
 }
 
 
+
 fn main() -> Result<(), Box<dyn Error>> {  // TODO: 2
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -62,3 +62,4 @@ fn main() -> Result<(), Box<dyn Error>> {  // TODO: 2
 
     Ok(())
 }
+

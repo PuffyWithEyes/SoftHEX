@@ -1,7 +1,6 @@
 pub mod read;
 pub mod write;
 
-use tui::widgets::canvas::Line;
 use read::read_file;
 
 
@@ -41,6 +40,7 @@ impl File {
             scroll: START_LINE,
             line_counter: 0_u16,
             find_text: String::new(),
+			file_mode: FileState::Normal,
         };
 
         file.line_counter = file.data.lines().count() as LineCounter;
