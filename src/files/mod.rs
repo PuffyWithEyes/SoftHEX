@@ -25,7 +25,7 @@ pub enum FileState {
 
 pub struct File {
     path: Path,
-    pub data: String,
+    pub data: Vec<String>,
     pub scroll: LineNumber,
     line_counter: LineCounter,
     find_text: String,
@@ -37,18 +37,22 @@ impl File {
     pub fn new(path: &Path) -> Self {
         let mut file = File {
             path: Path::from(path),
-            data: read_file(path).unwrap(),
+            data: read_file(path),
             scroll: START_LINE,
             line_counter: 0_u16,
             find_text: String::new(),
 			file_mode: FileState::Normal,
         };
 
-        file.line_counter = file.data.lines().count() as LineCounter;
+        file.line_counter = file.data.len() as LineCounter;
 
         file
     }
 
+	pub fn new_from_config() -> Self {
+		todo!("Сделать создание объекта из конфига")
+	}
+ 
     pub fn page_up(&mut self) {
         if self.scroll != self.line_counter {
             self.scroll += LINE_NUMBER;
