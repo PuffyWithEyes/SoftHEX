@@ -1,13 +1,44 @@
-use std::{fs, io::Write, path};
-use super::{Path, File};
+use std::{fs, env, io::Write, path};
+use super::{Path, File, read::read_file};
 use uid::Id as IdT;
 
 
+pub struct Paths {
+	pub config_path: String,
+	pub config_softhex_path: String,
+	pub config_file_path: String,
+	pub config_opened_files_path: String,
+}
+
+
+impl Default for Paths {
+	fn default() -> Self {
+		let mut home_dir = env::home_dir().unwrap().to_str().unwrap().to_string();
+		home_dir.push('/');
+		
+		let mut conf_path = String::from(home_dir);
+		conf_path.push_str(".config/");
+
+		let mut conf_softhex_path = String::from(home_dir);
+		conf_softhex_path.push_str(".config/softhex/");
+
+		let mut conf_file_path = String::from(home_dir);
+		conf_file_path.push_str(".config/softhex/opened_files.conf/");
+
+		let mut conf_opened_file = String::from(home_dir);
+		conf_opened_file.push_str(".config/softhex/opened_files/");
+
+		Paths {
+			config_path: conf_path,
+			config_softhex_path: conf_softhex_path,
+			config_file_path: conf_file_path,
+			config_opened_files_path: conf_opened_file,
+		}
+	}
+}
+
+
 const CONFIG_EXTENSION: &str = ".conf";
-const CONFIG_PATH: &str = "$HOME/.config/";
-const CONFIG_SOFTHEX_PATH: &str = "$HOME/.config/softhex/";
-const CONFIG_FILE_PATH: &str = "$HOME/.config/softhex/opened_files.conf/";
-pub const CONFIG_OPENED_FILES_PATH: &str = "$HOME/.config/softhex/opened_files/";
 
 
 struct T(());
@@ -32,56 +63,80 @@ fn append_data_in_file(path: &Path, data: &String) {
 }
 
 
-fn make_config_file_if_not_exist() {
-	let path = path::Path::new(CONFIG_PATH);
+fn make_config_file_if_not_exist(paths: &Paths) {
+	let path = path::Path::new(&paths.config_path);
 
 	if !path.exists() {
-		fs::create_dir(CONFIG_PATH);
+		fs::create_dir(&paths.config_path);
 	}
 
-	let path = path::Path::new(CONFIG_SOFTHEX_PATH);
+	let path = path::Path::new(&paths.config_softhex_path);
 
 	if !path.exists() {
-		fs::create_dir(CONFIG_SOFTHEX_PATH);
+		fs::create_dir(&paths.config_softhex_path);
 	}
 
-	let conf_file = path::Path::new(CONFIG_FILE_PATH);
+	let conf_file = path::Path::new(&paths.config_file_path);
 
 	if !conf_file.exists() {
-		write_in_file(&CONFIG_FILE_PATH.to_string(), &"".to_string());
+		write_in_file(&paths.config_file_path, &"".to_string());
 	}
 
-	let path = path::Path::new(CONFIG_OPENED_FILES_PATH);
+	let path = path::Path::new(&paths.config_opened_files_path);
 
 	if !path.exists() {
-		fs::create_dir(CONFIG_OPENED_FILES_PATH);
+		fs::create_dir(&paths.config_opened_files_path);
 	}
 }
 
 
-pub fn make_or_save_config(path: &Path, file: &File) {
-	make_config_file_if_not_exist();
+pub fn make_or_save_config(file: &File) {
+	let paths = Paths::default();
+	
+	make_config_file_if_not_exist(&paths);
 
 	let uid = Uid::new();
 
-	let mut base_config_line = String::from(&uid.get().to_string());
-	base_config_line.push('=');
-	base_config_line.push_str(&file.path);
-	base_config_line.push('\n');
+	let main_data_config: Vec<String> = read_file(&paths.config_file_path);
 
-	append_data_in_file(&CONFIG_FILE_PATH.to_string(), &base_config_line);
+	let mut success_uid = usize::MIN;
 
-	let mut config_file_path = String::from(CONFIG_OPENED_FILES_PATH);
+	for line in main_data_config {
+		let split_line: Vec<&str> = line.split('=').collect();
+
+		let path_after_uid = split_line.get(1).unwrap().to_string();
+
+		if path_after_uid == file.path {
+			let uid_path = split_line.get(0).unwrap();
+			
+			success_uid = uid_path.parse::<usize>().unwrap();
+		}
+	}
+
+	if success_uid == usize::MIN {
+		let mut path_and_uid_this_file = Path::from(uid.get().to_string());
+		path_and_uid_this_file.push('=');
+		path_and_uid_this_file.push_str(&file.path);
+
+		append_data_in_file(&paths.config_file_path, &path_and_uid_this_file);
+	}
+
+	let mut config_file_path = Path::from(paths.config_opened_files_path);
 	config_file_path.push_str(&uid.get().to_string());
 	config_file_path.push_str(CONFIG_EXTENSION);
+
+	let mut buffer = String::from(&file.path);
+	buffer.push('\n'); 
 	
-	let mut buffer = String::from("path=");
+	buffer.push_str("path=");
 	buffer.push_str(&file.data);
 	buffer.push_str("\nscroll=");
 	buffer.push_str(&file.scroll.to_string());
 	buffer.push_str("\nline_counter=");
 	buffer.push_str(&file.line_counter.to_string());
 	// TODO: 7
+
+	append_data_in_file(&config_file_path, &buffer);
 
 	write_in_file(&config_file_path, &buffer);
 }
