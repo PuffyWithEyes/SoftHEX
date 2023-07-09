@@ -6,30 +6,30 @@ use read::read_file;
 
 
 pub type Path = String;
-type LineNumber = u16;
+pub type LineNumber = u16;
 type LineCounter = u16;
 
 
 const LINE_NUMBER: u16 = 1_u16;
-const START_LINE: u16 = 0_u16;
+const START_LINE: u16 = u16::MIN;
 
 
 pub enum FileState {
     Normal,
-    FindInput,
     FindTextInput,
+	FindText,
     EditingHex,
     EditingText,
 }
 
 
 pub struct File {
-    path: Path,
+    pub path: Path,
     pub data: Vec<String>,
     pub scroll: LineNumber,
     line_counter: LineCounter,
     find_text: String,
-    file_mode: FileState,
+    pub file_mode: FileState,
 }
 
 
@@ -39,7 +39,7 @@ impl File {
             path: Path::from(path),
             data: read_file(path),
             scroll: START_LINE,
-            line_counter: 0_u16,
+            line_counter: u16::MIN,
             find_text: String::new(),
 			file_mode: FileState::Normal,
         };
@@ -49,8 +49,15 @@ impl File {
         file
     }
 
-	pub fn new_from_config() -> Self {
-		todo!("Сделать создание объекта из конфига")
+	pub fn new_from_config(path: &Path, scroll_file: &LineNumber) -> Self {
+		File {
+			path: Path::from(path),
+			data: read_file(path),
+			scroll: *scroll_file,
+			line_counter: u16::MIN,
+			find_text: String::new(),
+			file_mode: FileState::Normal,
+		}
 	}
  
     pub fn page_up(&mut self) {
