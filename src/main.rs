@@ -12,7 +12,7 @@ use tui::{
     backend::CrosstermBackend,
     Terminal,
 };
-use files::{File, Path, write::CONFIG_OPENED_FILES_PATH, read::read_file};
+use files::{File, Path, write::Paths, read::read_file, LineNumber};
 
 
 const LINE_NUMBER: u16 = 1_u16;
@@ -31,7 +31,7 @@ impl App {
 		App {
 			opened_files: Vec::new(),
 			tabs_titles: Vec::new(),
-			tabs_indexes: 0_usize,
+			tabs_indexes: usize::MIN,
 		}
 	}
 
@@ -44,35 +44,73 @@ impl App {
 		self.opened_files.insert(0, file);
 		self.tabs_titles.insert(0, file_name.to_string());
 	}
-}
 
+	pub fn add_complete_file(&mut self, file: &File) {
+		let file_name = path::Path::new(&file.path);
+		let file_name = file_name.file_name().unwrap().to_str().unwrap();
+		
+		self.opened_files.insert(0, *file);
+		self.tabs_titles.insert(0, file_name.to_string());
+	}
 
-fn load_all_files_in_app_buffer() {
-	let paths = fs::read_dir(CONFIG_OPENED_FILES_PATH).unwrap();
+	pub fn next_tab(&mut self) {
+		self.tabs_indexes = (self.tabs_indexes + 1) % self.opened_files.len();
+	}
 
-	for file in paths {
-		let data = read_file(&file.unwrap().path().to_str().unwrap().to_string()).unwrap();
-		todo!("Написать пробежку по файлу конфига и последующую загрузку его в буффер");
+	pub fn previous_tab(&mut self) {
+		if self.tabs_indexes > 0 {
+			self.tabs_indexes -= 1;
+		} else {
+			self.tabs_indexes = self.opened_files.len() - 1;
+		}
 	}
 }
 
 
+fn load_opened_files_in_app_buffer(app: &App) {
+	let default_paths = Paths::default();
+	
+	let paths = fs::read_dir(&default_paths.config_opened_files_path).unwrap();
 
-fn main() -> Result<(), Box<dyn Error>> {  // TODO: 2
+	for path in paths {
+		let config_file_data = read_file(&path.unwrap().path().to_str().unwrap().to_string());
+
+		let path_to_file = config_file_data.get(0).unwrap();
+		let scroll_of_file = config_file_data.get(1).unwrap()
+			.split('=')
+			.collect::<Vec::<&str>>()
+			.get(1)
+			.unwrap()
+			.parse::<LineNumber>()
+			.unwrap();
+
+		let file = File::new_from_config(&path_to_file, &scroll_of_file);
+
+		app.add_complete_file(&file);
+	}
+}
+
+
+#[cfg(target_os = "linux")]
+fn main() -> Result<(), Box<dyn Error>> {
 	let args: Vec<String> = env::args().collect();
 
-	let app = App::new();
+	let mut app = App::new();
 
+	load_opened_files_in_app_buffer(&app);
+	
 	for arg in args {
 		if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
-			todo!("Сделать help")
-		} else {
-			let file_path = fs::metadata(arg);
+			println!("So far there is nothing here :)");
 
-			if file_path.is_ok() {
-				
+			return Ok(());
+		} else {
+			let file_path = path::Path::new(&arg);
+
+			if file_path.exists() && file_path.is_file() {
+				app.add_file(&arg);
 			} else {
-				
+				panic!("This directory or yhis file doesen't exist ({})", arg);
 			}
 		}
 	}
