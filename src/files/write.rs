@@ -128,12 +128,8 @@ pub fn make_or_save_config(file: &File) {
 	let mut buffer = String::from(&file.path);
 	buffer.push('\n'); 
 	
-	buffer.push_str("path=");
-	buffer.push_str(&file.data);
 	buffer.push_str("\nscroll=");
 	buffer.push_str(&file.scroll.to_string());
-	buffer.push_str("\nline_counter=");
-	buffer.push_str(&file.line_counter.to_string());
 	// TODO: 7
 
 	append_data_in_file(&config_file_path, &buffer);
