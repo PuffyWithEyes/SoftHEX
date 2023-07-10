@@ -14,6 +14,7 @@ const LINE_NUMBER: u16 = 1_u16;
 const START_LINE: u16 = u16::MIN;
 
 
+#[derive(Clone)]
 pub enum FileState {
     Normal,
     FindTextInput,
@@ -23,12 +24,13 @@ pub enum FileState {
 }
 
 
+#[derive(Clone)]
 pub struct File {
     pub path: Path,
     pub data: Vec<String>,
     pub scroll: LineNumber,
     line_counter: LineCounter,
-    find_text: String,
+    pub find_text: String,
     pub file_mode: FileState,
 }
 

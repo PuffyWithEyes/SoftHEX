@@ -16,13 +16,13 @@ impl Default for Paths {
 		let mut home_dir = env::home_dir().unwrap().to_str().unwrap().to_string();
 		home_dir.push('/');
 		
-		let mut conf_path = String::from(home_dir);
+		let mut conf_path = String::from(home_dir.clone());
 		conf_path.push_str(".config/");
 
-		let mut conf_softhex_path = String::from(home_dir);
+		let mut conf_softhex_path = String::from(home_dir.clone());
 		conf_softhex_path.push_str(".config/softhex/");
 
-		let mut conf_file_path = String::from(home_dir);
+		let mut conf_file_path = String::from(home_dir.clone());
 		conf_file_path.push_str(".config/softhex/opened_files.conf/");
 
 		let mut conf_opened_file = String::from(home_dir);
@@ -48,7 +48,7 @@ type Uid = IdT<T>;
 fn write_in_file(path: &Path, data: &String) {
 	let mut file = fs::File::create(path).unwrap();
 
-	file.write_all(data.as_bytes());
+	file.write_all(data.as_bytes()).unwrap();
 }
 
 
@@ -59,21 +59,21 @@ fn append_data_in_file(path: &Path, data: &String) {
 		.open(path)
 		.unwrap();
 
-	file.write_all(data.as_bytes());
+	file.write_all(data.as_bytes()).unwrap();
 }
 
 
-fn make_config_file_if_not_exist(paths: &Paths) {
+pub fn make_config_file_if_not_exist(paths: &Paths) {
 	let path = path::Path::new(&paths.config_path);
 
 	if !path.exists() {
-		fs::create_dir(&paths.config_path);
+		fs::create_dir(&paths.config_path).unwrap();
 	}
 
 	let path = path::Path::new(&paths.config_softhex_path);
 
 	if !path.exists() {
-		fs::create_dir(&paths.config_softhex_path);
+		fs::create_dir(&paths.config_softhex_path).unwrap();
 	}
 
 	let conf_file = path::Path::new(&paths.config_file_path);
@@ -85,17 +85,16 @@ fn make_config_file_if_not_exist(paths: &Paths) {
 	let path = path::Path::new(&paths.config_opened_files_path);
 
 	if !path.exists() {
-		fs::create_dir(&paths.config_opened_files_path);
+		fs::create_dir(&paths.config_opened_files_path).unwrap();
 	}
 }
 
 
 pub fn make_or_save_config(file: &File) {
 	let paths = Paths::default();
-	
-	make_config_file_if_not_exist(&paths);
 
 	let uid = Uid::new();
+	let uid = String::from(&uid.get().to_string());
 
 	let main_data_config: Vec<String> = read_file(&paths.config_file_path);
 
@@ -114,7 +113,7 @@ pub fn make_or_save_config(file: &File) {
 	}
 
 	if success_uid == usize::MIN {
-		let mut path_and_uid_this_file = Path::from(uid.get().to_string());
+		let mut path_and_uid_this_file = Path::from(uid.clone());
 		path_and_uid_this_file.push('=');
 		path_and_uid_this_file.push_str(&file.path);
 
@@ -122,7 +121,7 @@ pub fn make_or_save_config(file: &File) {
 	}
 
 	let mut config_file_path = Path::from(paths.config_opened_files_path);
-	config_file_path.push_str(&uid.get().to_string());
+	config_file_path.push_str(&uid);
 	config_file_path.push_str(CONFIG_EXTENSION);
 
 	let mut buffer = String::from(&file.path);

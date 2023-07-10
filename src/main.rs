@@ -12,10 +12,9 @@ use tui::{
     backend::CrosstermBackend,
     Terminal,
 };
-use files::{File, Path, write::Paths, read::read_file, LineNumber};
+use files::{File, Path, write::{Paths, make_config_file_if_not_exist}, read::read_file, LineNumber};
 
 
-const LINE_NUMBER: u16 = 1_u16;
 type TabIndex = usize;
 
 
@@ -49,7 +48,7 @@ impl App {
 		let file_name = path::Path::new(&file.path);
 		let file_name = file_name.file_name().unwrap().to_str().unwrap();
 		
-		self.opened_files.insert(0, *file);
+		self.opened_files.insert(0, file.clone());
 		self.tabs_titles.insert(0, file_name.to_string());
 	}
 
@@ -67,8 +66,10 @@ impl App {
 }
 
 
-fn load_opened_files_in_app_buffer(app: &App) {
+fn load_opened_files_in_app_buffer(app: &mut App) {
 	let default_paths = Paths::default();
+
+	make_config_file_if_not_exist(&default_paths);
 	
 	let paths = fs::read_dir(&default_paths.config_opened_files_path).unwrap();
 
@@ -97,7 +98,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 	let mut app = App::new();
 
-	load_opened_files_in_app_buffer(&app);
+	load_opened_files_in_app_buffer(&mut app);
 	
 	for arg in args {
 		if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
