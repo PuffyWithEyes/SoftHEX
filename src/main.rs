@@ -98,9 +98,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 	let mut app = App::new();
 
+	let mut is_zero_iter = true;
+
 	load_opened_files_in_app_buffer(&mut app);
 	
 	for arg in args {
+		if is_zero_iter {
+			is_zero_iter = false;
+			continue;
+		}
+		
 		if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
 			println!("So far there is nothing here :)");
 
