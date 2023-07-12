@@ -23,7 +23,7 @@ impl Default for Paths {
 		conf_softhex_path.push_str(".config/softhex/");
 
 		let mut conf_file_path = String::from(home_dir.clone());
-		conf_file_path.push_str(".config/softhex/opened_files.conf/");
+		conf_file_path.push_str(".config/softhex/opened_files.conf");
 
 		let mut conf_opened_file = String::from(home_dir);
 		conf_opened_file.push_str(".config/softhex/opened_files/");
@@ -79,7 +79,7 @@ pub fn make_config_file_if_not_exist(paths: &Paths) {
 	let conf_file = path::Path::new(&paths.config_file_path);
 
 	if !conf_file.exists() {
-		write_in_file(&paths.config_file_path, &"".to_string());
+		fs::File::create(&paths.config_file_path).unwrap();
 	}
 
 	let path = path::Path::new(&paths.config_opened_files_path);
