@@ -59,6 +59,9 @@ pub fn run_app<B: Backend>(
 
 							file.file_mode = FileState::EditingHex;
 						},
+						KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Char('й') | KeyCode::Char('Й') => {
+							return Ok(());
+						},
 						_ => {},
 					}
 				},
