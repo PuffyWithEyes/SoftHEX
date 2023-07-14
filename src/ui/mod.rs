@@ -1,6 +1,6 @@
 mod draw;
 
-use crate::{App, files::{FileState, File}};
+use crate::{App, files::{FileState, File, write::make_or_save_config}};
 use draw::ui;
 use crossterm::event::{self, Event, KeyCode};
 use tui::{
@@ -59,8 +59,18 @@ pub fn run_app<B: Backend>(
 
 							file.file_mode = FileState::EditingHex;
 						},
+						KeyCode::F(5) => {  
+							let mut file = get_file_from_vec(&mut app);
+							
+							make_or_save_config(&file);
+
+							file.file_mode = FileState::Saved;
+						},
+						KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Char('с') | KeyCode::Char('С') => {
+							todo!("Сделать закрытие одноного из файлов в приложении")
+						},
 						KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Char('й') | KeyCode::Char('Й') => {
-							return Ok(());
+							return Ok(());  // TODO: 11
 						},
 						_ => {},
 					}
@@ -76,6 +86,9 @@ pub fn run_app<B: Backend>(
 				},
 				FileState::EditingText => {
 					todo!("Сделать изменение обычного текста")
+				},
+				FileState::Saved => {
+					todo!("Сделать уведомление о том, что успешно было сохранено")
 				},
 			}
         }

@@ -21,6 +21,7 @@ pub enum FileState {
 	FindText,
     EditingHex,
     EditingText,
+	Saved,
 }
 
 
