@@ -39,6 +39,14 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 					Constraint::Length(3), Constraint::Min(0),
 				].as_ref())
 				.split(f.size());
+			
+			let into_chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([
+                    Constraint::Percentage(65),
+                    Constraint::Percentage(35)
+                ].as_ref())
+                .split(main_chunks[1]);
 
 			let titles = app
 				.tabs_titles
