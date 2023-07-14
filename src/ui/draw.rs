@@ -1,4 +1,4 @@
-use crate::{files::{File, FileState}, App};
+use crate::{files::FileState, App};
 use super::get_file_from_vec;
 use tui::{
     backend::Backend,
@@ -8,6 +8,11 @@ use tui::{
     widgets::{Tabs, Block, Borders, Paragraph, Wrap, BorderType},
     Frame,
 };
+
+
+const RED_FOR_PINK: u8 = 255_u8;
+const GREEN_FOR_PINK: u8 = 192_u8;
+const BLUE_FOR_PINK: u8 = 203_u8;
 
 
 pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
@@ -45,7 +50,11 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 				.iter()
 				.map(|t| {
 					Spans::from(vec![
-						Span::styled(t, Style::default().fg(Color::Yellow)),
+						Span::styled(t, Style::default().fg(Color::Rgb(
+							RED_FOR_PINK,
+							GREEN_FOR_PINK,
+							BLUE_FOR_PINK,
+						))),
 					])
 				})
 				.collect();
@@ -62,9 +71,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
 			let file = get_file_from_vec(app);
 			let text: String = file.data.clone().into_iter().collect();
-            // let test_file = app.opened_files.get(0).unwrap();
-            // let text: Vec<String> = test_file.data.clone();
-			// let text: String = text.into_iter().collect();
 
             let paragraph = Paragraph::new(text.clone())
                 .block(create_block("HEX", Alignment::Center))
