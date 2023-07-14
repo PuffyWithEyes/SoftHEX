@@ -124,14 +124,12 @@ pub fn make_or_save_config(file: &File) {
 	config_file_path.push_str(&uid);
 	config_file_path.push_str(CONFIG_EXTENSION);
 
-	let mut buffer = String::from(&file.path);
-	buffer.push('\n'); 
-	
+	let src_path = fs::canonicalize(&file.path).unwrap().to_str().unwrap().to_string();
+
+	let mut buffer = String::from(&src_path); 
 	buffer.push_str("\nscroll=");
 	buffer.push_str(&file.scroll.to_string());
 	// TODO: 7
-
-	append_data_in_file(&config_file_path, &buffer);
 
 	write_in_file(&config_file_path, &buffer);
 }
