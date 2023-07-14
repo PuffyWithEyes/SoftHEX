@@ -12,7 +12,11 @@ use tui::{
     backend::CrosstermBackend,
     Terminal,
 };
-use files::{File, Path, write::{Paths, make_config_file_if_not_exist}, read::read_file, LineNumber};
+use files::{
+	File, Path, LineNumber,
+	write::{Paths, make_config_file_if_not_exist},
+	read::{read_file, number_of_opened_files},
+};
 
 
 type TabIndex = usize;
@@ -92,33 +96,44 @@ fn load_opened_files_in_app_buffer(app: &mut App) {
 }
 
 
+fn print_help() {
+	println!("So far there is nothing here :)");
+}
+
+
 #[cfg(target_os = "linux")]
 fn main() -> Result<(), Box<dyn Error>> {
 	let args: Vec<String> = env::args().collect();
 
 	let mut app = App::new();
 
-	let mut is_zero_iter = true;
-
 	load_opened_files_in_app_buffer(&mut app);
-	
-	for arg in args {
-		if is_zero_iter {
-			is_zero_iter = false;
-			continue;
-		}
+
+	if args.len() == 1 && number_of_opened_files() == 0 {
+		print_help();
 		
-		if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
-			println!("So far there is nothing here :)");
+		return Ok(());
+	} else {
+		let mut is_zero_iter = true;
+		
+		for arg in args {
+			if is_zero_iter {
+				is_zero_iter = false;
+				continue;
+			}
+			
+			if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
+				print_help();
 
-			return Ok(());
-		} else {
-			let file_path = path::Path::new(&arg);
-
-			if file_path.exists() && file_path.is_file() {
-				app.add_file(&arg);
+				return Ok(());
 			} else {
-				panic!("This directory or yhis file doesen't exist ({})", arg);
+				let file_path = path::Path::new(&arg);
+
+				if file_path.exists() && file_path.is_file() {
+					app.add_file(&arg);
+				} else {
+					panic!("This directory or yhis file doesen't exist ({})", arg);
+				}
 			}
 		}
 	}

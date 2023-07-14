@@ -1,5 +1,19 @@
 use std::{fs, io::{BufReader, BufRead}};
-use super::Path;
+use super::{Path, write::Paths};
+
+
+pub fn number_of_opened_files() -> usize {
+	let paths = Paths::default();
+	let mut counter = 0_usize;
+	
+	let dirs = fs::read_dir(paths.config_opened_files_path).unwrap();
+
+	for _ in dirs {
+		counter += 1;
+	}
+
+	counter
+}
 
 
 pub fn read_file(path: &Path) -> Vec<String> {
