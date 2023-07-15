@@ -13,8 +13,8 @@ use tui::{
     Terminal,
 };
 use files::{
-	File, Path, LineNumber,
-	write::{Paths, make_config_file_if_not_exist},
+	File, Path, LineNumber, Paths,
+	write::{PATH_IN_CONFIG_AT_VEC, SCROLL_IN_CONFIG_AT_VEC, make_config_file_if_not_exist},
 	read::{read_file, number_of_opened_files},
 };
 
@@ -67,6 +67,36 @@ impl App {
 			self.tabs_indexes = self.opened_files.len() - 1;
 		}
 	}
+
+	pub fn close_current_tab(&mut self) {
+		if self.tabs_indexes == self.opened_files.len() - 1 {
+			self.tabs_indexes -= 1;
+			
+			self.opened_files.remove(0);
+			self.tabs_titles.remove(0);
+		} else {
+			self.opened_files.remove(self.tabs_indexes + 1);
+			self.tabs_titles.remove(self.tabs_indexes + 1);
+		}
+	}
+
+	pub fn get_current_path_of_file(&self) -> Path {
+		let file = self.get_current_file();
+		
+		file.path.clone()
+	}
+
+	pub fn get_current_file(&self) -> File {
+		let index_opened_tab = self.tabs_indexes;
+		
+		self.opened_files[index_opened_tab].clone()
+	}
+
+	pub fn get_current_file_mut(&mut self) -> &mut File {
+		let index_opened_tab = self.tabs_indexes;
+		
+		&mut self.opened_files[index_opened_tab]
+	}
 }
 
 
@@ -76,12 +106,12 @@ fn load_opened_files_in_app_buffer(app: &mut App) {
 	make_config_file_if_not_exist(&default_paths);
 	
 	let paths = fs::read_dir(&default_paths.config_opened_files_path).unwrap();
-
+	
 	for path in paths {
 		let config_file_data = read_file(&path.unwrap().path().to_str().unwrap().to_string());
 
-		let path_to_file = config_file_data.get(0).unwrap();
-		let scroll_of_file = config_file_data.get(1).unwrap()
+		let path_to_file = config_file_data.get(PATH_IN_CONFIG_AT_VEC).unwrap();
+		let scroll_of_file = config_file_data.get(SCROLL_IN_CONFIG_AT_VEC).unwrap() 
 			.split('=')
 			.collect::<Vec::<&str>>()
 			.get(1)
@@ -113,7 +143,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 		print_help();
 		
 		return Ok(());
-	} else {
+	} else {  // TODO: 12
 		let mut is_zero_iter = true;
 		
 		for arg in args {
