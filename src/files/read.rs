@@ -1,5 +1,5 @@
 use std::{fs, io::{BufReader, BufRead}};
-use super::{Path, write::Paths};
+use super::{Path, Paths};
 
 
 pub fn number_of_opened_files() -> usize {

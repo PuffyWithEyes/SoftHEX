@@ -1,5 +1,4 @@
-use crate::{files::FileState, App};
-use super::get_file_from_vec;
+use crate::{App, files::FileState};
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Alignment},
@@ -27,7 +26,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .border_type(BorderType::Rounded)
     };
 
-	match get_file_from_vec(app).file_mode {
+	match app.get_current_file().file_mode {
 		FileState::Normal => {
 			let main_chunks = Layout::default()
 				.direction(Direction::Vertical)
@@ -69,7 +68,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 				);
 			f.render_widget(tabs, main_chunks[0]);
 
-			let file = get_file_from_vec(app);
+			let file = app.get_current_file();
 			let text: String = file.data.clone().into_iter().collect();
 
             let paragraph = Paragraph::new(text.clone())
