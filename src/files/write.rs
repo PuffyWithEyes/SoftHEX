@@ -3,6 +3,8 @@ use super::{Path, File, Paths, CONFIG_EXTENSION, read::read_file};
 use uid::Id as IdT;
 
 
+const UID_BEFORE_EQ: usize = 0_usize;
+const PATH_AFTER_EQ: usize = 1_usize;
 pub const PATH_IN_CONFIG_AT_VEC: usize = 0_usize;
 pub const SCROLL_IN_CONFIG_AT_VEC: usize = 1_usize;
 
@@ -69,10 +71,10 @@ pub fn make_or_save_config(file: &File) {
 	for line in main_data_config {
 		let split_line: Vec<&str> = line.split('=').collect();
 
-		let path_after_uid = split_line.get(1).unwrap().to_string();
+		let path_after_uid = split_line.get(PATH_AFTER_EQ).unwrap().to_string();
 
 		if path_after_uid == file.path {
-			let uid_path = split_line.get(0).unwrap();
+			let uid_path = split_line.get(UID_BEFORE_EQ).unwrap();
 			
 			success_uid = uid_path.parse::<usize>().unwrap();
 		}
@@ -81,8 +83,12 @@ pub fn make_or_save_config(file: &File) {
 	if success_uid == usize::MIN {
 		let mut path_and_uid_this_file = Path::from(uid.clone());
 		path_and_uid_this_file.push('=');
-		path_and_uid_this_file.push_str(&file.path);
 
+		let src_path = fs::canonicalize(&file.path).unwrap().to_str().unwrap().to_string();
+		
+		path_and_uid_this_file.push_str(&src_path);
+		path_and_uid_this_file.push('\n');
+		
 		append_data_in_file(&paths.config_file_path, &path_and_uid_this_file);
 	}
 
