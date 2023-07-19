@@ -3,10 +3,9 @@ mod draw;
 use crate::{
 	App,
 	files::{
-		FileState, Paths,
-		write::{PATH_IN_CONFIG_AT_VEC, make_or_save_config},
-		move_file::move_file,
-		read::read_file,
+		FileState,
+		write::make_or_save_config,
+		move_file::move_to_closed,
 	},
 };
 use draw::ui;
@@ -15,7 +14,14 @@ use tui::{
     backend::Backend,
     Terminal,
 };
-use std::{io, fs};
+use std::io;
+
+
+fn close_tab(app: &mut App) {
+	let file = app.get_current_file();
+	
+	move_to_closed(&file);
+}
 
 
 pub fn run_app<B: Backend>(
@@ -41,13 +47,15 @@ pub fn run_app<B: Backend>(
 						KeyCode::Up => {
 							let file = app.get_current_file_mut();
 
-							file.page_up();
+							make_or_save_config(&file.path, file.scroll);
+							
+							file.page_down();
 						},
 						KeyCode::Char('s') | KeyCode::Char('S') | KeyCode::Char('ы') | KeyCode::Char('Ы') |
 						KeyCode::Down => {
 							let file = app.get_current_file_mut();
 
-							file.page_down();
+							file.page_up();
 						},
 						KeyCode::Char('t') | KeyCode::Char('T') | KeyCode::Char('е') | KeyCode::Char('Е') => {
 							let file = app.get_current_file_mut();
@@ -61,30 +69,17 @@ pub fn run_app<B: Backend>(
 						},
 						KeyCode::F(5) => {  
 							let file = app.get_current_file_mut();
-							
-							make_or_save_config(&file);
 
 							file.file_mode = FileState::Saved;
 						},
 						KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Char('с') | KeyCode::Char('С') => {
 							if app.opened_files.len() == 1 {  // TODO: 11
+								close_tab(&mut app);
+								
 								return Ok(());
 							} else {
-								let default_paths = Paths::default();
-								let opened_files = fs::read_dir(default_paths.config_opened_files_path).unwrap();
+								close_tab(&mut app);
 
-								for file_path in opened_files {
-									let config_file_data = read_file(
-										&file_path.unwrap().path().to_str().unwrap().to_string()
-									);
-
-									let path_of_file_in_conf = config_file_data.get(PATH_IN_CONFIG_AT_VEC);
-
-									//if path_of_file_in_conf == 
-								}
-								
-								//move_file(from, to);
-								
 								app.close_current_tab();
 							}
 						},

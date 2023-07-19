@@ -16,6 +16,7 @@ use files::{
 	File, Path, LineNumber, Paths,
 	write::{PATH_IN_CONFIG_AT_VEC, SCROLL_IN_CONFIG_AT_VEC, make_config_file_if_not_exist},
 	read::{read_file, number_of_opened_files},
+	move_file::move_to_closed,
 };
 
 
@@ -38,7 +39,7 @@ impl App {
 		}
 	}
 
-	pub fn add_file(&mut self, path: &Path) {
+	pub fn add_file(&mut self, path: &Path) {  // TODO: 12
 		let file = File::new(path);
 		
 		let file_name = path::Path::new(path);
@@ -48,7 +49,7 @@ impl App {
 		self.tabs_titles.insert(0, file_name.to_string());
 	}
 
-	pub fn add_complete_file(&mut self, file: &File) {
+	pub fn add_complete_file(&mut self, file: &File) {  // TODO: 12
 		let file_name = path::Path::new(&file.path);
 		let file_name = file_name.file_name().unwrap().to_str().unwrap();
 		
@@ -71,10 +72,14 @@ impl App {
 	pub fn close_current_tab(&mut self) {
 		if self.tabs_indexes == self.opened_files.len() - 1 {
 			self.tabs_indexes -= 1;
+
+			move_to_closed(&self.opened_files[0]);
 			
 			self.opened_files.remove(0);
 			self.tabs_titles.remove(0);
 		} else {
+			move_to_closed(&self.opened_files[self.tabs_indexes + 1]);
+			
 			self.opened_files.remove(self.tabs_indexes + 1);
 			self.tabs_titles.remove(self.tabs_indexes + 1);
 		}
@@ -119,7 +124,7 @@ fn load_opened_files_in_app_buffer(app: &mut App) {
 			.parse::<LineNumber>()
 			.unwrap();
 
-		let file = File::new_from_config(&path_to_file, &scroll_of_file);
+		let file = File::new_from_config(&path_to_file, scroll_of_file);
 
 		app.add_complete_file(&file);
 	}

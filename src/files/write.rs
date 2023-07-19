@@ -1,5 +1,5 @@
 use std::{fs, io::Write, path};
-use super::{Path, File, Paths, CONFIG_EXTENSION, read::read_file};
+use super::{Path, Paths, CONFIG_EXTENSION, read::read_file};
 use uid::Id as IdT;
 
 
@@ -11,6 +11,12 @@ pub const SCROLL_IN_CONFIG_AT_VEC: usize = 1_usize;
 
 struct T(());
 type Uid = IdT<T>;
+
+
+pub enum FileExist {
+	Exist(usize),
+	NotExist(Path),
+}
 
 
 fn write_in_file(path: &Path, data: &String) {
@@ -58,7 +64,7 @@ pub fn make_config_file_if_not_exist(paths: &Paths) {
 }
 
 
-pub fn make_or_save_config(file: &File) {
+pub fn make_or_save_config(path: &Path, scroll: u16) -> FileExist {
 	let paths = Paths::default();
 
 	let uid = Uid::new();
@@ -73,36 +79,39 @@ pub fn make_or_save_config(file: &File) {
 
 		let path_after_uid = split_line.get(PATH_AFTER_EQ).unwrap().to_string();
 
-		if path_after_uid == file.path {
+		if &path_after_uid == path {
 			let uid_path = split_line.get(UID_BEFORE_EQ).unwrap();
 			
 			success_uid = uid_path.parse::<usize>().unwrap();
 		}
 	}
 
-	if success_uid == usize::MIN {
+	return if success_uid != usize::MIN {
+		FileExist::Exist(success_uid)
+	} else {
 		let mut path_and_uid_this_file = Path::from(uid.clone());
 		path_and_uid_this_file.push('=');
 
-		let src_path = fs::canonicalize(&file.path).unwrap().to_str().unwrap().to_string();
+		let src_path = fs::canonicalize(&path).unwrap().to_str().unwrap().to_string();
 		
 		path_and_uid_this_file.push_str(&src_path);
 		path_and_uid_this_file.push('\n');
 		
 		append_data_in_file(&paths.config_file_path, &path_and_uid_this_file);
+
+		let mut config_path_name_of_file = Path::from(paths.config_opened_files_path);
+		config_path_name_of_file.push_str(&uid);
+		config_path_name_of_file.push_str(CONFIG_EXTENSION);
+
+		let src_path = fs::canonicalize(&path).unwrap().to_str().unwrap().to_string();
+
+		let mut buffer = String::from(&src_path); 
+		buffer.push_str("\nscroll=");
+		buffer.push_str(&scroll.to_string());  // TODO: 7
+
+		write_in_file(&config_path_name_of_file, &buffer);
+
+		FileExist::NotExist(config_path_name_of_file)
 	}
-
-	let mut config_file_path = Path::from(paths.config_opened_files_path);
-	config_file_path.push_str(&uid);
-	config_file_path.push_str(CONFIG_EXTENSION);
-
-	let src_path = fs::canonicalize(&file.path).unwrap().to_str().unwrap().to_string();
-
-	let mut buffer = String::from(&src_path); 
-	buffer.push_str("\nscroll=");
-	buffer.push_str(&file.scroll.to_string());
-	// TODO: 7
-
-	write_in_file(&config_file_path, &buffer);
 }
 

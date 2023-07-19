@@ -1,10 +1,13 @@
 #![allow(deprecated)]
+
 pub mod read;
 pub mod write;
 pub mod move_file;
 
 use read::read_file;
-use std::env;
+use std::{env, fs};
+use write::{FileExist, make_or_save_config};
+use move_file::move_to_opened;
 
 
 pub struct Paths {
@@ -73,34 +76,17 @@ pub struct File {
     line_counter: LineCounter,
     pub find_text: String,
     pub file_mode: FileState,
+	conf_path: Path,
 }
 
 
 impl File {
     pub fn new(path: &Path) -> Self {
-        let mut file = File {
-            path: Path::from(path),
-            data: read_file(path),
-            scroll: START_LINE,
-            line_counter: u16::MIN,
-            find_text: String::new(),
-			file_mode: FileState::Normal,
-        };
-
-        file.line_counter = file.data.len() as LineCounter;
-
-        file
+		Self::new_object(path, START_LINE)
     }
 
-	pub fn new_from_config(path: &Path, scroll_file: &LineNumber) -> Self {
-		File {
-			path: Path::from(path),
-			data: read_file(path),
-			scroll: *scroll_file,
-			line_counter: u16::MIN,
-			find_text: String::new(),
-			file_mode: FileState::Normal,
-		}
+	pub fn new_from_config(path: &Path, scroll_file: LineNumber) -> Self {
+		Self::new_object(path, scroll_file)
 	}
  
     pub fn page_up(&mut self) {
@@ -114,5 +100,70 @@ impl File {
             self.scroll -= LINE_NUMBER;
         }
     }
+
+	fn new_object(path: &Path, file_scroll: LineNumber) -> Self {
+		let mut file = match make_or_save_config(path, START_LINE) {
+			FileExist::Exist(file_uid) => {
+				let default_paths = Paths::default();
+				
+				let mut file_name = Path::from(file_uid.to_string());
+				file_name.push_str(CONFIG_EXTENSION);
+
+				let closed_files = fs::read_dir(default_paths.config_softhex_path).unwrap();
+
+				for file in closed_files {
+					if file.as_ref().unwrap().file_name().to_str().unwrap().to_string() == file_name {
+						let return_file =  File {
+							path: Path::from(path),
+							data: read_file(path),
+							scroll: file_scroll,
+							line_counter: u16::MIN,
+							find_text: String::new(),
+							file_mode: FileState::Normal,
+							conf_path: fs::canonicalize(file.unwrap().path())
+								.unwrap()
+								.to_str()
+								.unwrap()
+								.to_string() as Path,
+						};
+
+						move_to_opened(&return_file);
+
+						return return_file;
+					}
+				}
+
+				let mut opened_file = Path::from(default_paths.config_opened_files_path);
+				opened_file.push_str(&file_name);
+				
+				File {
+					path: Path::from(path),
+					data: read_file(path),
+					scroll: file_scroll,
+					line_counter: u16::MIN,
+					find_text: String::new(),
+					file_mode: FileState::Normal,
+					conf_path: fs::canonicalize(opened_file)
+						.unwrap()
+						.to_str()
+						.unwrap()
+						.to_string() as Path,
+				}
+			},
+			FileExist::NotExist(file_path) => File {
+				path: Path::from(path),
+				data: read_file(path),
+				scroll: file_scroll,
+				line_counter: u16::MIN,
+				find_text: String::new(),
+				file_mode: FileState::Normal,
+				conf_path: file_path,
+			},
+		};
+
+        file.line_counter = file.data.len() as LineCounter;
+
+        file
+	}
 }
 
