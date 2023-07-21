@@ -4,8 +4,8 @@ use crate::{
 	App,
 	files::{
 		FileState,
-		write::make_or_save_config,
 		move_file::move_to_closed,
+		write::make_or_save_config,
 	},
 };
 use draw::ui;
@@ -24,10 +24,10 @@ fn close_tab(app: &mut App) {
 }
 
 
-pub fn run_app<B: Backend>(
+pub fn run_app<B>(
     terminal: &mut Terminal<B>,
     mut app: App,
-) -> io::Result<()> {
+) -> io::Result<()> where B: Backend {
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
 
@@ -46,8 +46,6 @@ pub fn run_app<B: Backend>(
 						KeyCode::Char('w') | KeyCode::Char('W') | KeyCode::Char('ц') | KeyCode::Char('Ц') |
 						KeyCode::Up => {
 							let file = app.get_current_file_mut();
-
-							make_or_save_config(&file.path, file.scroll);
 							
 							file.page_down();
 						},
@@ -70,12 +68,14 @@ pub fn run_app<B: Backend>(
 						KeyCode::F(5) => {  
 							let file = app.get_current_file_mut();
 
+							make_or_save_config(&file.path, file.scroll);
+
 							file.file_mode = FileState::Saved;
 						},
 						KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Char('с') | KeyCode::Char('С') => {
-							if app.opened_files.len() == 1 {  // TODO: 11
+							if app.opened_files.len() == 1 {
 								close_tab(&mut app);
-								
+
 								return Ok(());
 							} else {
 								close_tab(&mut app);
@@ -84,6 +84,10 @@ pub fn run_app<B: Backend>(
 							}
 						},
 						KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Char('й') | KeyCode::Char('Й') => {
+							for file in app.opened_files {
+								make_or_save_config(&file.path, file.scroll);
+							}
+							
 							return Ok(());  // TODO: 11
 						},
 						_ => {},
