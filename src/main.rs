@@ -14,7 +14,7 @@ use tui::{
 };
 use files::{
 	File, Path, LineNumber, Paths,
-	write::{PATH_IN_CONFIG_AT_VEC, SCROLL_IN_CONFIG_AT_VEC, make_config_file_if_not_exist},
+	write::{PATH_IN_CONFIG_AT_VEC, SCROLL_IN_CONFIG_AT_VEC, make_config_file_if_not_exist, make_or_save_config},
 	read::{read_file, number_of_opened_files},
 	move_file::move_to_closed,
 };
@@ -70,18 +70,23 @@ impl App {
 	}
 
 	pub fn close_current_tab(&mut self) {
-		if self.tabs_indexes == self.opened_files.len() - 1 {
+		let current_index = self.tabs_indexes;
+		
+		if current_index == self.opened_files.len() - 1 {
 			self.tabs_indexes -= 1;
 
+			
+			make_or_save_config(&self.opened_files[current_index].path, self.opened_files[current_index].scroll);
 			move_to_closed(&self.opened_files[0]);
 			
 			self.opened_files.remove(0);
 			self.tabs_titles.remove(0);
 		} else {
-			move_to_closed(&self.opened_files[self.tabs_indexes + 1]);
+			make_or_save_config(&self.opened_files[current_index].path, self.opened_files[current_index].scroll);
+			move_to_closed(&self.opened_files[current_index + 1]);
 			
-			self.opened_files.remove(self.tabs_indexes + 1);
-			self.tabs_titles.remove(self.tabs_indexes + 1);
+			self.opened_files.remove(current_index + 1);
+			self.tabs_titles.remove(current_index + 1);
 		}
 	}
 
@@ -165,9 +170,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 				let file_path = path::Path::new(&arg);
 
 				if file_path.exists() && file_path.is_file() {
-					app.add_file(&arg);
+					let file_path = fs::canonicalize(&arg).unwrap().to_str().unwrap().to_string();
+					app.add_file(&file_path);
 				} else {
-					panic!("This directory or yhis file doesen't exist ({})", arg);
+					panic!("This directory or this file doesen't exist ({})", arg);
 				}
 			}
 		}
