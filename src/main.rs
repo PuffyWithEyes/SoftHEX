@@ -71,22 +71,15 @@ impl App {
 
 	pub fn close_current_tab(&mut self) {
 		let current_index = self.tabs_indexes;
-		
-		if current_index == self.opened_files.len() - 1 {
-			self.tabs_indexes -= 1;
 
-			
-			make_or_save_config(&self.opened_files[current_index].path, self.opened_files[current_index].scroll);
-			move_to_closed(&self.opened_files[0]);
-			
-			self.opened_files.remove(0);
-			self.tabs_titles.remove(0);
-		} else {
-			make_or_save_config(&self.opened_files[current_index].path, self.opened_files[current_index].scroll);
-			move_to_closed(&self.opened_files[current_index + 1]);
-			
-			self.opened_files.remove(current_index + 1);
-			self.tabs_titles.remove(current_index + 1);
+		make_or_save_config(&self.opened_files[current_index].path, self.opened_files[current_index].scroll);
+		move_to_closed(&self.opened_files[current_index]);
+
+		self.opened_files.remove(current_index);
+		self.tabs_titles.remove(current_index);
+
+		if current_index != 0 {
+			self.tabs_indexes -= 1;
 		}
 	}
 
@@ -107,6 +100,17 @@ impl App {
 		
 		&mut self.opened_files[index_opened_tab]
 	}
+}
+
+
+fn is_file_open_in_tabs(app: &App, path: &Path) -> bool {
+	for file in &app.opened_files {
+		if &file.path == path {
+			return true; 
+		}
+	}
+
+	false
 }
 
 
@@ -170,7 +174,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 				let file_path = path::Path::new(&arg);
 
 				if file_path.exists() && file_path.is_file() {
-					let file_path = fs::canonicalize(&arg).unwrap().to_str().unwrap().to_string();
+					let file_path: Path = fs::canonicalize(&arg).unwrap().to_str().unwrap().to_string();
+
+					if is_file_open_in_tabs(&app, &file_path) {
+						continue;
+					} 
+					
 					app.add_file(&file_path);
 				} else {
 					panic!("This directory or this file doesen't exist ({})", arg);
