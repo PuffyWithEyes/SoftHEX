@@ -4,7 +4,6 @@ use crate::{
 	App,
 	files::{
 		FileState,
-		move_file::move_to_closed,
 		write::make_or_save_config,
 	},
 };
@@ -15,13 +14,6 @@ use tui::{
     Terminal,
 };
 use std::io;
-
-
-fn close_tab(app: &mut App) {
-	let file = app.get_current_file();
-	
-	move_to_closed(&file);
-}
 
 
 pub fn run_app<B>(
@@ -73,14 +65,10 @@ pub fn run_app<B>(
 							file.file_mode = FileState::Saved;
 						},
 						KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Char('с') | KeyCode::Char('С') => {
-							if app.opened_files.len() == 1 {
-								close_tab(&mut app);
-
+							app.close_current_tab();
+							
+							if app.opened_files.len() == 0 {								
 								return Ok(());
-							} else {
-								close_tab(&mut app);
-
-								app.close_current_tab();
 							}
 						},
 						KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Char('й') | KeyCode::Char('Й') => {
