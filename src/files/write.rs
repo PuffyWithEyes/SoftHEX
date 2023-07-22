@@ -1,17 +1,34 @@
 use std::{fs, io::Write, path};
-use super::{Path, Paths, CONFIG_EXTENSION, read::read_file};
+use super::{Path, Paths, CONFIG_EXTENSION, LineCounter, read::read_file};
 use uid::Id as IdT;
 
 
 const UID_BEFORE_EQ: usize = 0_usize;
 const PATH_AFTER_EQ: usize = 1_usize;
+const SCROLL_AFTER_EQ: usize = 1_usize;
 pub const PATH_IN_CONFIG_AT_VEC: usize = 0_usize;
 pub const SCROLL_IN_CONFIG_AT_VEC: usize = 1_usize;
 
 
+pub struct DataClosedFile {
+	path: Path,
+	scroll: LineCounter,
+}
+
+
+impl DataClosedFile {
+	fn new(path_of_file: &Path, scroll_of_file: LineCounter) -> Self {
+		DataClosedFile {
+			path: *path_of_file,
+			scroll: scroll_of_file,
+		}
+	}
+}
+
+
 pub enum IsOpen {
 	Yes(Path),
-	No(Path),
+	No(DataClosedFile),
 }
 
 
@@ -108,8 +125,24 @@ pub fn make_or_save_config(path: &Path, scroll: u16) -> IsOpen {
 
 		for file in closed_files {
 			if file.as_ref().unwrap().file_name().to_str().unwrap().to_string() == file_name {
+				let data_closed_file = read_file(&file.unwrap().path().to_str().unwrap().to_string());
+
+				let split_line: Vec<&str> = data_closed_file
+					.get(SCROLL_IN_CONFIG_AT_VEC)
+					.unwrap()
+					.split('=')
+					.collect();
+
+				let scroll = split_line
+					.get(SCROLL_AFTER_EQ)
+					.unwrap();
+
+				// Перевести в число
+
+				let path = write_data_in_conf(&paths.config_softhex_path, success_uid, path, scroll);
+				
 				return IsOpen::No(
-					write_data_in_conf(&paths.config_softhex_path, success_uid, path, scroll)
+					
 				);
 			}
 		}
