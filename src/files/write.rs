@@ -11,15 +11,15 @@ pub const SCROLL_IN_CONFIG_AT_VEC: usize = 1_usize;
 
 
 pub struct DataClosedFile {
-	path: Path,
-	scroll: LineCounter,
+	pub path: Path,
+	pub scroll: LineCounter,
 }
 
 
 impl DataClosedFile {
 	fn new(path_of_file: &Path, scroll_of_file: LineCounter) -> Self {
 		DataClosedFile {
-			path: *path_of_file,
+			path: path_of_file.clone(),
 			scroll: scroll_of_file,
 		}
 	}
@@ -81,7 +81,7 @@ pub fn make_config_file_if_not_exist(paths: &Paths) {
 }
 
 
-fn write_data_in_conf(from_path: &Path, uid: usize, path_of_file: &Path, scroll: u16) -> Path {
+fn write_data_in_conf(from_path: &Path, uid: usize, path_of_file: &Path, scroll: LineCounter) -> Path {
 	let mut config_path_name_of_file = Path::from(from_path);
 	config_path_name_of_file.push_str(&uid.to_string());
 	config_path_name_of_file.push_str(CONFIG_EXTENSION);
@@ -135,15 +135,15 @@ pub fn make_or_save_config(path: &Path, scroll: u16) -> IsOpen {
 
 				let scroll = split_line
 					.get(SCROLL_AFTER_EQ)
-					.unwrap();
-
-				// Перевести в число
+					.unwrap()
+					.to_string();
+				let scroll = scroll.parse::<LineCounter>().unwrap();
 
 				let path = write_data_in_conf(&paths.config_softhex_path, success_uid, path, scroll);
+
+				let data = DataClosedFile::new(&path, scroll);
 				
-				return IsOpen::No(
-					
-				);
+				return IsOpen::No(data);
 			}
 		}
 

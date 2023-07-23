@@ -112,15 +112,15 @@ impl File {
 				file_mode: FileState::Normal,
 				conf_path: path_of_conf_file,
 			},
-			IsOpen::No(path_of_conf_file) => {
+			IsOpen::No(data_of_file) => {
 				let mut new_file = File {
 					path: Path::from(path),
 					data: read_file(path),
-					scroll: file_scroll,
+					scroll: data_of_file.scroll,
 					line_counter: u16::MIN,
 					find_text: String::new(),
 					file_mode: FileState::Normal,
-					conf_path: path_of_conf_file,
+					conf_path: data_of_file.path,
 				};
 
 				move_to_opened(&mut new_file);
