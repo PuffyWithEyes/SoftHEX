@@ -1,6 +1,6 @@
 use std::{fs, io::Write, path};
 use super::{Path, Paths, CONFIG_EXTENSION, LineCounter, read::read_file};
-use uid::Id as IdT;
+use chrono::Utc;
 
 
 const UID_BEFORE_EQ: usize = 0_usize;
@@ -30,10 +30,6 @@ pub enum IsOpen {
 	Yes(Path),
 	No(DataClosedFile),
 }
-
-
-struct T(());
-type Uid = IdT<T>;
 
 
 fn write_in_file(path: &Path, data: &String) {
@@ -151,8 +147,8 @@ pub fn make_or_save_config(path: &Path, scroll: u16) -> IsOpen {
 			write_data_in_conf(&paths.config_opened_files_path, success_uid, path, scroll)
 		);
 	} else {
-		let uid = Uid::new();
-		let uid = uid.get();
+		let datetime_for_uid = Utc::now();
+		let uid = datetime_for_uid.timestamp() as usize;
 		
 		let mut path_and_uid_this_file = Path::from(uid.to_string());
 		path_and_uid_this_file.push('=');
