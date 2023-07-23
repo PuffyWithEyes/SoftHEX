@@ -12,7 +12,12 @@ use tui::{
     backend::CrosstermBackend,
     Terminal,
 };
-use files::{File, Path, write::{Paths, make_config_file_if_not_exist}, read::read_file, LineNumber};
+use files::{
+	File, Path, LineNumber, Paths,
+	write::{PATH_IN_CONFIG_AT_VEC, SCROLL_IN_CONFIG_AT_VEC, make_config_file_if_not_exist, make_or_save_config},
+	read::{read_file, number_of_opened_files},
+	move_file::move_to_closed,
+};
 
 
 type TabIndex = usize;
@@ -34,7 +39,7 @@ impl App {
 		}
 	}
 
-	pub fn add_file(&mut self, path: &Path) {
+	pub fn add_file(&mut self, path: &Path) {  // TODO: 12
 		let file = File::new(path);
 		
 		let file_name = path::Path::new(path);
@@ -44,7 +49,7 @@ impl App {
 		self.tabs_titles.insert(0, file_name.to_string());
 	}
 
-	pub fn add_complete_file(&mut self, file: &File) {
+	pub fn add_complete_file(&mut self, file: &File) {  // TODO: 12
 		let file_name = path::Path::new(&file.path);
 		let file_name = file_name.file_name().unwrap().to_str().unwrap();
 		
@@ -63,6 +68,49 @@ impl App {
 			self.tabs_indexes = self.opened_files.len() - 1;
 		}
 	}
+
+	pub fn close_current_tab(&mut self) {
+		let current_index = self.tabs_indexes;
+
+		make_or_save_config(&self.opened_files[current_index].path, self.opened_files[current_index].scroll);
+		move_to_closed(&self.opened_files[current_index]);
+
+		self.opened_files.remove(current_index);
+		self.tabs_titles.remove(current_index);
+
+		if current_index != 0 {
+			self.tabs_indexes -= 1;
+		}
+	}
+
+	pub fn get_current_path_of_file(&self) -> Path {
+		let file = self.get_current_file();
+		
+		file.path.clone()
+	}
+
+	pub fn get_current_file(&self) -> File {
+		let index_opened_tab = self.tabs_indexes;
+		
+		self.opened_files[index_opened_tab].clone()
+	}
+
+	pub fn get_current_file_mut(&mut self) -> &mut File {
+		let index_opened_tab = self.tabs_indexes;
+		
+		&mut self.opened_files[index_opened_tab]
+	}
+}
+
+
+fn is_file_open_in_tabs(app: &App, path: &Path) -> bool {
+	for file in &app.opened_files {
+		if &file.path == path {
+			return true; 
+		}
+	}
+
+	false
 }
 
 
@@ -72,12 +120,12 @@ fn load_opened_files_in_app_buffer(app: &mut App) {
 	make_config_file_if_not_exist(&default_paths);
 	
 	let paths = fs::read_dir(&default_paths.config_opened_files_path).unwrap();
-
+	
 	for path in paths {
 		let config_file_data = read_file(&path.unwrap().path().to_str().unwrap().to_string());
 
-		let path_to_file = config_file_data.get(0).unwrap();
-		let scroll_of_file = config_file_data.get(1).unwrap()
+		let path_to_file = config_file_data.get(PATH_IN_CONFIG_AT_VEC).unwrap();
+		let scroll_of_file = config_file_data.get(SCROLL_IN_CONFIG_AT_VEC).unwrap() 
 			.split('=')
 			.collect::<Vec::<&str>>()
 			.get(1)
@@ -85,10 +133,15 @@ fn load_opened_files_in_app_buffer(app: &mut App) {
 			.parse::<LineNumber>()
 			.unwrap();
 
-		let file = File::new_from_config(&path_to_file, &scroll_of_file);
+		let file = File::new_from_config(&path_to_file, scroll_of_file);
 
 		app.add_complete_file(&file);
 	}
+}
+
+
+fn print_help() {
+	println!("So far there is nothing here :)");
 }
 
 
@@ -99,19 +152,38 @@ fn main() -> Result<(), Box<dyn Error>> {
 	let mut app = App::new();
 
 	load_opened_files_in_app_buffer(&mut app);
-	
-	for arg in args {
-		if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
-			println!("So far there is nothing here :)");
 
-			return Ok(());
-		} else {
-			let file_path = path::Path::new(&arg);
+	if args.len() == 1 && number_of_opened_files() == 0 {
+		print_help();
+		
+		return Ok(());
+	} else {  // TODO: 12
+		let mut is_zero_iter = true;
+		
+		for arg in args {
+			if is_zero_iter {
+				is_zero_iter = false;
+				continue;
+			}
+			
+			if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
+				print_help();
 
-			if file_path.exists() && file_path.is_file() {
-				app.add_file(&arg);
+				return Ok(());
 			} else {
-				panic!("This directory or yhis file doesen't exist ({})", arg);
+				let file_path = path::Path::new(&arg);
+
+				if file_path.exists() && file_path.is_file() {
+					let file_path: Path = fs::canonicalize(&arg).unwrap().to_str().unwrap().to_string();
+
+					if is_file_open_in_tabs(&app, &file_path) {
+						continue;
+					} 
+					
+					app.add_file(&file_path);
+				} else {
+					panic!("This directory or this file doesen't exist ({})", arg);
+				}
 			}
 		}
 	}

@@ -1,6 +1,12 @@
 mod draw;
 
-use crate::{App, files::{FileState, File}};
+use crate::{
+	App,
+	files::{
+		FileState,
+		write::make_or_save_config,
+	},
+};
 use draw::ui;
 use crossterm::event::{self, Event, KeyCode};
 use tui::{
@@ -10,23 +16,15 @@ use tui::{
 use std::io;
 
 
-pub fn get_file_from_vec(app: &mut App) -> File {
-	let index_opened_tab = app.tabs_indexes;
-
-	app.opened_files.get(index_opened_tab).unwrap().clone()
-}
-
-
-pub fn run_app<B: Backend>(
+pub fn run_app<B>(
     terminal: &mut Terminal<B>,
     mut app: App,
-) -> io::Result<()> {
-	
+) -> io::Result<()> where B: Backend {
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
 
         if let Event::Key(key) = event::read()? {
-			match get_file_from_vec(&mut app).file_mode {
+			match app.get_current_file().file_mode {
 				FileState::Normal => {
 					match key.code {
 						KeyCode::Char('d') | KeyCode::Char('D') | KeyCode::Char('в') | KeyCode::Char('В') |
@@ -39,25 +37,46 @@ pub fn run_app<B: Backend>(
 						},
 						KeyCode::Char('w') | KeyCode::Char('W') | KeyCode::Char('ц') | KeyCode::Char('Ц') |
 						KeyCode::Up => {
-							let mut file = get_file_from_vec(&mut app);
-
-							file.page_up();
+							let file = app.get_current_file_mut();
+							
+							file.page_down();
 						},
 						KeyCode::Char('s') | KeyCode::Char('S') | KeyCode::Char('ы') | KeyCode::Char('Ы') |
 						KeyCode::Down => {
-							let mut file = get_file_from_vec(&mut app);
+							let file = app.get_current_file_mut();
 
-							file.page_down();
+							file.page_up();
 						},
 						KeyCode::Char('t') | KeyCode::Char('T') | KeyCode::Char('е') | KeyCode::Char('Е') => {
-							let mut file = get_file_from_vec(&mut app);
+							let file = app.get_current_file_mut();
 
 							file.file_mode = FileState::EditingText;
 						},
 						KeyCode::Char('h') | KeyCode::Char('H') | KeyCode::Char('р') | KeyCode::Char('Р') => {
-							let mut file = get_file_from_vec(&mut app);
+							let file = app.get_current_file_mut();
 
 							file.file_mode = FileState::EditingHex;
+						},
+						KeyCode::F(5) => {  
+							let file = app.get_current_file_mut();
+
+							make_or_save_config(&file.path, file.scroll);
+
+							file.file_mode = FileState::Saved;
+						},
+						KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Char('с') | KeyCode::Char('С') => {
+							app.close_current_tab();
+							
+							if app.opened_files.len() == 0 {								
+								return Ok(());
+							}
+						},
+						KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Char('й') | KeyCode::Char('Й') => {
+							for file in app.opened_files {
+								make_or_save_config(&file.path, file.scroll);
+							}
+							
+							return Ok(());  // TODO: 11
 						},
 						_ => {},
 					}
@@ -73,6 +92,9 @@ pub fn run_app<B: Backend>(
 				},
 				FileState::EditingText => {
 					todo!("Сделать изменение обычного текста")
+				},
+				FileState::Saved => {
+					todo!("Сделать уведомление о том, что успешно было сохранено")
 				},
 			}
         }
