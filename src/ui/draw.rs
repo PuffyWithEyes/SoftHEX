@@ -77,11 +77,16 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .wrap(Wrap { trim: true })
                 .scroll((file.scroll, 0));
             f.render_widget(paragraph, into_chunks[0]);
+                .scroll((file.scroll, 0));
+            f.render_widget(paragraph, into_chunks[0]);
 
             let paragraph = Paragraph::new(text.clone())
                 .block(create_block("Text", Alignment::Center))
+                .block(create_block("Text", Alignment::Center))
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
+                .scroll((file.scroll, 0));
+            f.render_widget(paragraph, into_chunks[1]);
                 .scroll((file.scroll, 0));
             f.render_widget(paragraph, into_chunks[1]);
 		},
