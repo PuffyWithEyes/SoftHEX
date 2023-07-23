@@ -57,6 +57,11 @@ pub fn run_app<B>(
 
 							file.file_mode = FileState::EditingHex;
 						},
+						KeyCode::Char('f') | KeyCode::Char('F') | KeyCode::Char('а') | KeyCode::Char('А') => {
+							let file = app.get_current_file_mut();
+
+							file.file_mode = FileState::FindTextInput;
+						},
 						KeyCode::F(5) => {  
 							let file = app.get_current_file_mut();
 
@@ -82,7 +87,29 @@ pub fn run_app<B>(
 					}
 				},
 				FileState::FindTextInput => {
-					todo!("Сделать ввод текста для поиска")
+					match key.code {
+						KeyCode::Esc => {
+							let file = app.get_current_file_mut();
+
+							file.file_mode = FileState::Normal;
+						},
+						KeyCode::Enter => {
+							let file = app.get_current_file_mut();
+
+							file.file_mode = FileState::FindTextInput;
+						},
+						KeyCode::Backspace => {
+							let file = app.get_current_file_mut();
+
+							file.find_text.pop();
+						}
+						KeyCode::Char(symbol) => {
+							let file = app.get_current_file_mut();
+
+							file.find_text.push(symbol);
+						},
+						_ => {},
+					}
 				},
 				FileState::FindText => {
 					todo!("Сделать сам поиск")
