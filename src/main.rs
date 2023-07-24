@@ -1,5 +1,6 @@
 mod ui;
 mod files;
+mod etc;
 
 use ui::run_app;
 use crossterm::{
@@ -174,7 +175,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 				let file_path = path::Path::new(&arg);
 
 				if file_path.exists() && file_path.is_file() {
-					let file_path: Path = fs::canonicalize(&arg).unwrap().to_str().unwrap().to_string();
+					let file_path: Path = fs::canonicalize(&arg)?.to_str().unwrap().to_string();
 
 					if is_file_open_in_tabs(&app, &file_path) {
 						continue;

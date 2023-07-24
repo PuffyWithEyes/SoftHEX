@@ -1,13 +1,13 @@
 #![allow(deprecated)]
-
 pub mod read;
 pub mod write;
 pub mod move_file;
 
-use read::read_file;
+use read::get_string_from_file;
 use std::env;
 use write::{IsOpen, make_or_save_config};
 use move_file::move_to_opened;
+use crate::etc::get_hex;
 
 
 pub struct Paths {
@@ -45,14 +45,15 @@ impl Default for Paths {
 }
 
 
-const CONFIG_EXTENSION: &str = ".conf";
-
-
+pub type HEX = u8;
 pub type Path = String;
 pub type LineNumber = u16;
 type LineCounter = u16;
 
 
+const CONFIG_EXTENSION: &str = ".conf";
+const START_ASCII_PRINTABLE: u8 = 0x20;
+const END_ASCII_PRINTABLE: u8 = 0x7E;
 const LINE_NUMBER: u16 = 1_u16;
 const START_LINE: u16 = u16::MIN;
 
@@ -71,7 +72,8 @@ pub enum FileState {
 #[derive(Clone)]
 pub struct File {
     pub path: Path,
-    pub data: Vec<String>,
+	pub text_data: String,
+	pub hex_data: String,
     pub scroll: LineNumber,
     line_counter: LineCounter,
     pub find_text: String,
@@ -102,12 +104,32 @@ impl File {
     }
 
 	fn new_object(path: &Path, file_scroll: LineNumber) -> Self {
-		let mut file: Self = match make_or_save_config(path, file_scroll) {
+		let file_data = get_string_from_file(path);
+		
+		let mut text = String::with_capacity(file_data.len());
+		let mut hex = String::new();
+
+		for symbol in file_data.chars() {
+			if symbol as HEX >= START_ASCII_PRINTABLE && symbol as HEX <= END_ASCII_PRINTABLE {
+				text.push(symbol);
+			} else {
+				text.push('.');
+			}
+
+			let mut detail = String::with_capacity(3);
+			detail.push_str(&get_hex(symbol));
+			detail.push(' ');
+																		
+			hex.push_str(&detail);
+		}
+		
+		let file: Self = match make_or_save_config(path, file_scroll) {
 			IsOpen::Yes(path_of_conf_file) => File {
 				path: Path::from(path),
-				data: read_file(path),
+				text_data: text,
+				hex_data: hex.clone(),
 				scroll: file_scroll,
-				line_counter: u16::MIN,
+				line_counter: hex.len() as LineCounter,
 				find_text: String::new(),
 				file_mode: FileState::Normal,
 				conf_path: path_of_conf_file,
@@ -115,9 +137,10 @@ impl File {
 			IsOpen::No(data_of_file) => {
 				let mut new_file = File {
 					path: Path::from(path),
-					data: read_file(path),
+					text_data: text,
+					hex_data: hex.clone(),
 					scroll: data_of_file.scroll,
-					line_counter: u16::MIN,
+					line_counter: hex.len() as LineCounter,
 					find_text: String::new(),
 					file_mode: FileState::Normal,
 					conf_path: data_of_file.path,
@@ -128,8 +151,6 @@ impl File {
 				new_file
 			},
 		};
-		
-        file.line_counter = file.data.len() as LineCounter;
 
         file
 	}

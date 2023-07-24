@@ -73,16 +73,15 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 			f.render_widget(tabs, main_chunks[0]);
 
 			let file = app.get_current_file();
-			let text: String = file.data.clone().into_iter().collect();
 
-            let paragraph = Paragraph::new(text.clone())
+            let paragraph = Paragraph::new(file.hex_data)
                 .block(create_block("HEX", Alignment::Center))
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
                 .scroll((file.scroll, 0));
             f.render_widget(paragraph, into_chunks[0]);
 
-            let paragraph = Paragraph::new(text.clone())
+            let paragraph = Paragraph::new(file.text_data)
                 .block(create_block("Text", Alignment::Center))
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
@@ -131,16 +130,15 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 			f.render_widget(tabs, main_chunks[0]);
 
 			let file = app.get_current_file();
-			let text: String = file.data.clone().into_iter().collect();
 
-            let paragraph = Paragraph::new(text.as_ref())
+            let paragraph = Paragraph::new(file.hex_data)
                 .block(create_block("HEX", Alignment::Center))
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
                 .scroll((file.scroll, 0));
             f.render_widget(paragraph, into_chunks[0]);
 
-            let paragraph = Paragraph::new(text.as_ref())
+            let paragraph = Paragraph::new(file.text_data)
                 .block(create_block("Text", Alignment::Center))
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
