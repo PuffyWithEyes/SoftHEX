@@ -13,6 +13,8 @@ use unicode_width::UnicodeWidthStr;
 type ColumnCounter = u16;
 
 
+const HEX_AREA: u16 = 75_u16;
+const TEXT_AREA: u16 = 25_u16;
 const RED_FOR_PINK: u8 = 255_u8;
 const GREEN_FOR_PINK: u8 = 192_u8;
 const BLUE_FOR_PINK: u8 = 203_u8;
@@ -43,8 +45,8 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 			let into_chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints([
-                    Constraint::Percentage(65),
-                    Constraint::Percentage(35),
+                    Constraint::Percentage(HEX_AREA),
+                    Constraint::Percentage(TEXT_AREA),
                 ].as_ref())
                 .split(main_chunks[1]);
 
@@ -100,8 +102,8 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 			let into_chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints([
-                    Constraint::Percentage(65),
-                    Constraint::Percentage(35),
+                    Constraint::Percentage(HEX_AREA),
+                    Constraint::Percentage(TEXT_AREA),
                 ].as_ref())
                 .split(main_chunks[1]);
 

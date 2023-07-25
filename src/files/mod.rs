@@ -53,7 +53,7 @@ type LineCounter = u16;
 
 const CONFIG_EXTENSION: &str = ".conf";
 const START_ASCII_PRINTABLE: u8 = 0x20;
-const END_ASCII_PRINTABLE: u8 = 0x7E;
+const END_ASCII_PRINTABLE: u8 = 0xFF;
 const LINE_NUMBER: u16 = 1_u16;
 const START_LINE: u16 = u16::MIN;
 
@@ -110,7 +110,7 @@ impl File {
 		let mut hex = String::new();
 
 		for symbol in file_data.chars() {
-			if symbol as HEX >= START_ASCII_PRINTABLE && symbol as HEX <= END_ASCII_PRINTABLE {
+			if symbol as HEX > START_ASCII_PRINTABLE && symbol as HEX <= END_ASCII_PRINTABLE {
 				text.push(symbol);
 			} else {
 				text.push('.');
