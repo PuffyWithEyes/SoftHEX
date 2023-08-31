@@ -13,8 +13,7 @@ use unicode_width::UnicodeWidthStr;
 type ColumnCounter = u16;
 
 
-const HEX_AREA: u16 = 75_u16;
-const TEXT_AREA: u16 = 25_u16;
+const HEX_AREA: u16 = 100_u16;
 const RED_FOR_PINK: u8 = 255_u8;
 const GREEN_FOR_PINK: u8 = 192_u8;
 const BLUE_FOR_PINK: u8 = 203_u8;
@@ -46,7 +45,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .direction(Direction::Horizontal)
                 .constraints([
                     Constraint::Percentage(HEX_AREA),
-                    Constraint::Percentage(TEXT_AREA),
                 ].as_ref())
                 .split(main_chunks[1]);
 
@@ -82,13 +80,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .wrap(Wrap { trim: true })
                 .scroll((file.scroll, 0));
             f.render_widget(paragraph, into_chunks[0]);
-
-            let paragraph = Paragraph::new(file.text_data)
-                .block(create_block("Text", Alignment::Center))
-                .alignment(Alignment::Left)
-                .wrap(Wrap { trim: true })
-                .scroll((file.scroll, 0));
-            f.render_widget(paragraph, into_chunks[1]);
 		},
 		FileState::FindTextInput => {
 			let main_chunks = Layout::default()
@@ -103,7 +94,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .direction(Direction::Horizontal)
                 .constraints([
                     Constraint::Percentage(HEX_AREA),
-                    Constraint::Percentage(TEXT_AREA),
                 ].as_ref())
                 .split(main_chunks[1]);
 
@@ -140,17 +130,10 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .scroll((file.scroll, 0));
             f.render_widget(paragraph, into_chunks[0]);
 
-            let paragraph = Paragraph::new(file.text_data)
-                .block(create_block("Text", Alignment::Center))
-                .alignment(Alignment::Left)
-                .wrap(Wrap { trim: true })
-                .scroll((file.scroll, 0));
-            f.render_widget(paragraph, into_chunks[1]);
-
 			let file = app.get_current_file();
 
 			let input_line = Paragraph::new(file.find_text.as_ref())
-				.block(create_block("Find string in \"Text\"", Alignment::Right));
+				.block(create_block("Find strings", Alignment::Right));
 			f.render_widget(input_line, main_chunks[2]);
 
 			f.set_cursor(

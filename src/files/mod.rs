@@ -64,7 +64,6 @@ pub enum FileState {
     FindTextInput,
 	FindText,
     EditingHex,
-    EditingText,
 	Saved,
 }
 

@@ -47,17 +47,13 @@ pub fn run_app<B>(
 
 							file.page_up();
 						},
-						KeyCode::Char('t') | KeyCode::Char('T') | KeyCode::Char('е') | KeyCode::Char('Е') => {
-							let file = app.get_current_file_mut();
-
-							file.file_mode = FileState::EditingText;
-						},
 						KeyCode::Char('h') | KeyCode::Char('H') | KeyCode::Char('р') | KeyCode::Char('Р') => {
 							let file = app.get_current_file_mut();
 
 							file.file_mode = FileState::EditingHex;
 						},
-						KeyCode::Char('f') | KeyCode::Char('F') | KeyCode::Char('а') | KeyCode::Char('А') => {
+						KeyCode::
+						Char('f') | KeyCode::Char('F') | KeyCode::Char('а') | KeyCode::Char('А') => {
 							let file = app.get_current_file_mut();
 
 							file.file_mode = FileState::FindTextInput;
@@ -116,9 +112,6 @@ pub fn run_app<B>(
 				},
 				FileState::EditingHex => {
 					todo!("Сделать изменение hex текста")
-				},
-				FileState::EditingText => {
-					todo!("Сделать изменение обычного текста")
 				},
 				FileState::Saved => {
 					todo!("Сделать уведомление о том, что успешно было сохранено")
