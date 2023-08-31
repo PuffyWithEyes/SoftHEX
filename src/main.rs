@@ -4,7 +4,7 @@ mod etc;
 
 use ui::run_app;
 use crossterm::{
-    event::EnableMouseCapture,
+    event::DisableMouseCapture,
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -96,7 +96,7 @@ impl App {
 		self.opened_files[index_opened_tab].clone()
 	}
 
-	pub fn get_current_file_mut(&mut self) -> &mut File {
+	pub fn get_current_file_mut<'a>(&'a mut self) -> &'a mut File {
 		let index_opened_tab = self.tabs_indexes;
 		
 		&mut self.opened_files[index_opened_tab]
@@ -191,7 +191,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 	
     enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(stdout, EnterAlternateScreen, DisableMouseCapture)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -201,7 +201,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     execute!(
         terminal.backend_mut(),
         LeaveAlternateScreen,
-        EnableMouseCapture,  // Edit in disable
+        DisableMouseCapture,  // Edit in disable
     )?;
     terminal.show_cursor()?;
 
