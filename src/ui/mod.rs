@@ -53,8 +53,7 @@ where B: Backend {
 
 							file.file_mode = FileState::EditingHex;
 						},
-						KeyCode::
-						Char('f') | KeyCode::Char('F') | KeyCode::Char('а') | KeyCode::Char('А') => {
+						KeyCode::Char('f') | KeyCode::Char('F') | KeyCode::Char('а') | KeyCode::Char('А') => {
 							let file = app.get_current_file_mut();
 
 							file.file_mode = FileState::FindTextInput;
@@ -92,22 +91,18 @@ where B: Backend {
 					match key.code {
 						KeyCode::Esc => {
 							let file = app.get_current_file_mut();
-
 							file.file_mode = FileState::Normal;
 						},
 						KeyCode::Enter => {
 							let file = app.get_current_file_mut();
-
 							file.file_mode = FileState::FindTextInput;
 						},
 						KeyCode::Backspace => {
 							let file = app.get_current_file_mut();
-
 							file.find_text.pop();
 						}
 						KeyCode::Char(symbol) => {
 							let file = app.get_current_file_mut();
-
 							file.find_text.push(symbol);
 						},
 						_ => {},
@@ -126,7 +121,6 @@ where B: Backend {
 					match key.code {
 						KeyCode::Esc => {
 							let file = app.get_current_file_mut();
-
 							file.file_mode = FileState::Normal;
 						},
 						KeyCode::Enter => {
@@ -134,12 +128,10 @@ where B: Backend {
 						},
 						KeyCode::Backspace => {
 							let file = app.get_current_file_mut();
-
 							file.find_text.pop();
 						},
 						KeyCode::Char(symbol) => {
 							let file = app.get_current_file_mut();
-
 							file.find_text.push(symbol);
 						},
 						_ => {},

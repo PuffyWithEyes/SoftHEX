@@ -100,13 +100,13 @@ impl App {
 		&mut self.opened_files[self.current_index]
 	}
 
-// 	pub fn open_file_wth_ui(&mut self) {
-// 		let mut file = &self.opened_files[self.current_index];
+	// pub fn open_file_wth_ui(&mut self) {
+	// 	let mut file = &mut self.opened_files[self.current_index];
 		
-// 		self.add_file(file);
+	// 	self.add_complete_file(file);
 		
-// 		file.file_mode = crate::files::FileState::Normal;
-// 	} 
+	// 	file.file_mode = crate::files::FileState::Normal;
+	// } 
 }
 
 
@@ -148,7 +148,12 @@ fn load_opened_files_in_app_buffer(app: &mut App) {
 
 
 fn print_help() {
-	println!("So far there is nothing here :)");
+	println!(
+		"Usage: softhex [FILES TO OPEN]
+   or: softhex [-h or --help]
+
+Terminal HEX Viewier"	
+	);
 }
 
 
