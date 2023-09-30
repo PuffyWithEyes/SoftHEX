@@ -19,7 +19,8 @@ use std::io;
 pub fn run_app<B>(
     terminal: &mut Terminal<B>,
     mut app: App,
-) -> io::Result<()> where B: Backend {
+) -> io::Result<()>
+where B: Backend {
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
 
@@ -79,6 +80,11 @@ pub fn run_app<B>(
 							
 							return Ok(());  // TODO: 11
 						},
+						KeyCode::Char('o') | KeyCode::Char('O') | KeyCode::Char('щ') | KeyCode::Char('Щ') => {
+							let file = app.get_current_file_mut();
+
+							file.file_mode = FileState::OpenFile;
+						},
 						_ => {},
 					}
 				},
@@ -115,6 +121,29 @@ pub fn run_app<B>(
 				},
 				FileState::Saved => {
 					todo!("Сделать уведомление о том, что успешно было сохранено")
+				},
+				FileState::OpenFile => {
+					match key.code {
+						KeyCode::Esc => {
+							let file = app.get_current_file_mut();
+
+							file.file_mode = FileState::Normal;
+						},
+						KeyCode::Enter => {
+							// app.open_file_wth_ui();
+						},
+						KeyCode::Backspace => {
+							let file = app.get_current_file_mut();
+
+							file.find_text.pop();
+						},
+						KeyCode::Char(symbol) => {
+							let file = app.get_current_file_mut();
+
+							file.find_text.push(symbol);
+						},
+						_ => {},
+					}
 				},
 			}
         }

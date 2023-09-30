@@ -13,7 +13,6 @@ use unicode_width::UnicodeWidthStr;
 type ColumnCounter = u16;
 
 
-const HEX_AREA: u16 = 100_u16;
 const RED_FOR_PINK: u8 = 255_u8;
 const GREEN_FOR_PINK: u8 = 192_u8;
 const BLUE_FOR_PINK: u8 = 203_u8;
@@ -40,13 +39,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 					Constraint::Length(3), Constraint::Min(0),
 				].as_ref())
 				.split(f.size());
-			
-			let into_chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(HEX_AREA),
-                ].as_ref())
-                .split(main_chunks[1]);
 
 			let titles = app
 				.tabs_titles
@@ -64,7 +56,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 			
 			let tabs = Tabs::new(titles)
 				.block(Block::default().borders(Borders::ALL).title("Tabs"))
-				.select(app.tabs_indexes)
+				.select(app.current_index)
 				.highlight_style(
 					Style::default()
 						.add_modifier(Modifier::BOLD)
@@ -79,7 +71,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
                 .scroll((file.scroll, 0));
-            f.render_widget(paragraph, into_chunks[0]);
+            f.render_widget(paragraph, main_chunks[1]);
 		},
 		FileState::FindTextInput => {
 			let main_chunks = Layout::default()
@@ -89,13 +81,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 					Constraint::Length(3), Constraint::Min(0), Constraint::Length(3),
 				].as_ref())
 				.split(f.size());
-			
-			let into_chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(HEX_AREA),
-                ].as_ref())
-                .split(main_chunks[1]);
 
 			let titles = app
 				.tabs_titles
@@ -113,7 +98,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 			
 			let tabs = Tabs::new(titles)
 				.block(Block::default().borders(Borders::ALL).title("Tabs"))
-				.select(app.tabs_indexes)
+				.select(app.current_index)
 				.highlight_style(
 					Style::default()
 						.add_modifier(Modifier::BOLD)
@@ -128,7 +113,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
                 .scroll((file.scroll, 0));
-            f.render_widget(paragraph, into_chunks[0]);
+            f.render_widget(paragraph, main_chunks[1]);
 
 			let file = app.get_current_file();
 
@@ -140,6 +125,9 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 				main_chunks[2].x + file.find_text.width() as ColumnCounter + 1,
 				main_chunks[2].y + 1,
 			);
+		},
+		FileState::OpenFile => {
+			
 		},
 		_ => {},                                 
 	}

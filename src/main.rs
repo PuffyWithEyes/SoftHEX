@@ -27,7 +27,7 @@ type TabIndex = usize;
 pub struct App {
     opened_files: Vec<File>,
     tabs_titles: Vec<String>,
-    tabs_indexes: TabIndex,
+    current_index: TabIndex,
 }
 
 
@@ -36,7 +36,7 @@ impl App {
 		App {
 			opened_files: Vec::new(),
 			tabs_titles: Vec::new(),
-			tabs_indexes: usize::MIN,
+			current_index: usize::MIN,
 		}
 	}
 
@@ -59,19 +59,19 @@ impl App {
 	}
 
 	pub fn next_tab(&mut self) {
-		self.tabs_indexes = (self.tabs_indexes + 1) % self.opened_files.len();
+		self.current_index = (self.current_index + 1) % self.opened_files.len();
 	}
 
 	pub fn previous_tab(&mut self) {
-		if self.tabs_indexes > 0 {
-			self.tabs_indexes -= 1;
+		if self.current_index > 0 {
+			self.current_index -= 1;
 		} else {
-			self.tabs_indexes = self.opened_files.len() - 1;
+			self.current_index = self.opened_files.len() - 1;
 		}
 	}
 
 	pub fn close_current_tab(&mut self) {
-		let current_index = self.tabs_indexes;
+		let current_index = self.current_index;
 
 		make_or_save_config(&self.opened_files[current_index].path, self.opened_files[current_index].scroll);
 		move_to_closed(&self.opened_files[current_index]);
@@ -80,7 +80,7 @@ impl App {
 		self.tabs_titles.remove(current_index);
 
 		if current_index != 0 {
-			self.tabs_indexes -= 1;
+			self.current_index -= 1;
 		}
 	}
 
@@ -91,16 +91,22 @@ impl App {
 	}
 
 	pub fn get_current_file(&self) -> File {
-		let index_opened_tab = self.tabs_indexes;
+		let index_opened_tab = self.current_index;
 		
 		self.opened_files[index_opened_tab].clone()
 	}
 
-	pub fn get_current_file_mut<'a>(&'a mut self) -> &'a mut File {
-		let index_opened_tab = self.tabs_indexes;
-		
-		&mut self.opened_files[index_opened_tab]
+	pub fn get_current_file_mut(&mut self) -> &mut File {
+		&mut self.opened_files[self.current_index]
 	}
+
+// 	pub fn open_file_wth_ui(&mut self) {
+// 		let mut file = &self.opened_files[self.current_index];
+		
+// 		self.add_file(file);
+		
+// 		file.file_mode = crate::files::FileState::Normal;
+// 	} 
 }
 
 
@@ -201,7 +207,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     execute!(
         terminal.backend_mut(),
         LeaveAlternateScreen,
-        DisableMouseCapture,  // Edit in disable
+        DisableMouseCapture,
     )?;
     terminal.show_cursor()?;
 
