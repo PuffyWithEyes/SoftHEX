@@ -1,4 +1,4 @@
-use std::{fs, io::{BufReader, BufRead}};
+use std::{fs, io::{BufReader, BufRead, Read}};
 use super::{Path, Paths};
 
 
@@ -27,5 +27,15 @@ pub fn read_file(path: &Path) -> Vec<String> {
 	}
 
 	data_vec
+}
+
+
+pub fn get_string_from_file(path: &Path) -> String {
+	let mut file = fs::File::open(path).unwrap();
+	let mut data = String::new();
+
+	file.read_to_string(&mut data).unwrap();
+
+	data
 }
 
