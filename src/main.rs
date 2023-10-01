@@ -169,13 +169,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 		print_help();
 		
 		return Ok(());
-	if args.len() == 1 && number_of_opened_files() == 0 {
-		print_help();
-		
-		return Ok(());
 	} else {  // TODO: 12
-		let mut is_zero_iter = true;
-		
 		let mut is_zero_iter = true;
 		
 		for arg in args {
@@ -184,19 +178,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 				continue;
 			}
 			
-			if is_zero_iter {
-				is_zero_iter = false;
-				continue;
-			}
-			
-			if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
-				print_help();
 			if arg.to_lowercase() == "--help" || arg.to_lowercase() == "-h" {
 				print_help();
 
-				return Ok(());
-			} else {
-				let file_path = path::Path::new(&arg);
 				return Ok(());
 			} else {
 				let file_path = path::Path::new(&arg);

@@ -39,14 +39,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 					Constraint::Length(3), Constraint::Min(0),
 				].as_ref())
 				.split(f.size());
-			
-			let into_chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(65),
-                    Constraint::Percentage(35)
-                ].as_ref())
-                .split(main_chunks[1]);
 
 			let titles = app
 				.tabs_titles
@@ -79,21 +71,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .alignment(Alignment::Left)
                 .wrap(Wrap { trim: true })
                 .scroll((file.scroll, 0));
-<<<<<<< HEAD
-            f.render_widget(paragraph, into_chunks[0]);
-                .scroll((file.scroll, 0));
-            f.render_widget(paragraph, into_chunks[0]);
-
-            let paragraph = Paragraph::new(text.clone())
-                .block(create_block("Text", Alignment::Center))
-                .block(create_block("Text", Alignment::Center))
-                .alignment(Alignment::Left)
-                .wrap(Wrap { trim: true })
-                .scroll((file.scroll, 0));
-            f.render_widget(paragraph, into_chunks[1]);
-                .scroll((file.scroll, 0));
-            f.render_widget(paragraph, into_chunks[1]);
-=======
             f.render_widget(paragraph, main_chunks[1]);
 		},
 		FileState::FindTextInput => {
@@ -151,7 +128,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 		},
 		FileState::OpenFile => {
 			
->>>>>>> dev
 		},
 		_ => {},                                 
 	}
