@@ -103,11 +103,11 @@ impl App {
 	}
 
 	pub fn open_file_wth_ui(&mut self) {
-		let path = &Path::from(self.open_file_text.clone());
-		self.add_file(&path);
-		
-		let mut file = &mut self.opened_files[self.current_index];
+		let file = self.get_current_file_mut();
 		file.file_mode = crate::files::FileState::Normal;
+		
+		let path = Path::from(self.open_file_text.clone());
+		self.add_file(&path);
 	} 
 }
 

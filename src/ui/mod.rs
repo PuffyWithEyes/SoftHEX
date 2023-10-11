@@ -130,7 +130,7 @@ where B: Backend {
 							file.file_mode = FileState::Normal;
 						},
 						KeyCode::Enter => {
-							app.open_file_wth_ui();
+							app.open_file_wth_ui();							
 						},
 						KeyCode::Backspace => {
 							app.open_file_text.pop();
