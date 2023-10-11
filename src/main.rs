@@ -28,6 +28,7 @@ pub struct App {
     opened_files: Vec<File>,
     tabs_titles: Vec<String>,
     current_index: TabIndex,
+	open_file_text: Path,
 }
 
 
@@ -37,6 +38,7 @@ impl App {
 			opened_files: Vec::new(),
 			tabs_titles: Vec::new(),
 			current_index: usize::MIN,
+			open_file_text: Path::new(),
 		}
 	}
 
@@ -100,13 +102,13 @@ impl App {
 		&mut self.opened_files[self.current_index]
 	}
 
-	// pub fn open_file_wth_ui(&mut self) {
-	// 	let mut file = &mut self.opened_files[self.current_index];
+	pub fn open_file_wth_ui(&mut self) {
+		let path = &Path::from(self.open_file_text.clone());
+		self.add_file(&path);
 		
-	// 	self.add_complete_file(file);
-		
-	// 	file.file_mode = crate::files::FileState::Normal;
-	// } 
+		let mut file = &mut self.opened_files[self.current_index];
+		file.file_mode = crate::files::FileState::Normal;
+	} 
 }
 
 

@@ -105,6 +105,12 @@ where B: Backend {
 							let file = app.get_current_file_mut();
 							file.find_text.push(symbol);
 						},
+						KeyCode::Left => {
+							app.previous_tab();
+						},
+						KeyCode::Right => {
+							app.next_tab();
+						},
 						_ => {},
 					}
 				},
@@ -124,15 +130,19 @@ where B: Backend {
 							file.file_mode = FileState::Normal;
 						},
 						KeyCode::Enter => {
-							// app.open_file_wth_ui();
+							app.open_file_wth_ui();
 						},
 						KeyCode::Backspace => {
-							let file = app.get_current_file_mut();
-							file.find_text.pop();
+							app.open_file_text.pop();
 						},
 						KeyCode::Char(symbol) => {
-							let file = app.get_current_file_mut();
-							file.find_text.push(symbol);
+							app.open_file_text.push(symbol);
+						},
+						KeyCode::Left => {
+							app.previous_tab();
+						},
+						KeyCode::Right => {
+							app.next_tab();
 						},
 						_ => {},
 					}

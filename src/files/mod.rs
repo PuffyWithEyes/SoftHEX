@@ -79,7 +79,6 @@ pub struct File {
     pub find_text: String,
     pub file_mode: FileState,
 	conf_path: Path,
-	pub open_file_text: Path,
 }
 
 
@@ -134,7 +133,6 @@ impl File {
 				find_text: String::new(),
 				file_mode: FileState::Normal,
 				conf_path: path_of_conf_file,
-				open_file_text: Path::new(),
 			},
 			IsOpen::No(data_of_file) => {
 				let mut new_file = File {
@@ -146,7 +144,6 @@ impl File {
 					find_text: String::new(),
 					file_mode: FileState::Normal,
 					conf_path: data_of_file.path,
-					open_file_text: Path::new(),
 				};
 
 				move_to_opened(&mut new_file);
