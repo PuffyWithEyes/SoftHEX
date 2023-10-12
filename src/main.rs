@@ -103,23 +103,28 @@ impl App {
 	}
 
 	pub fn open_file_wth_ui(&mut self) {
-		let path = &Path::from(self.open_file_text.clone());
-		self.add_file(&path);
+		let file = self.get_current_file_mut();
+		file.file_mode = crate::files::FileState::Normal;  // TODO: Потом возможно сделать обработку ошибок
 		
-		let mut file = &mut self.opened_files[self.current_index];
-		file.file_mode = crate::files::FileState::Normal;
-	} 
-}
-
-
-fn is_file_open_in_tabs(app: &App, path: &Path) -> bool {
-	for file in &app.opened_files {
-		if &file.path == path {
-			return true; 
+		let mut path = Path::from(self.open_file_text.clone());
+		path = fs::canonicalize(path).unwrap().to_str().unwrap().to_string();
+		
+		if self.is_file_open_in_tabs(&path) {
+			return;
 		}
+		
+		self.add_file(&path);
 	}
 
-	false
+	pub fn is_file_open_in_tabs(&self, path: &Path) -> bool {
+		for file in &self.opened_files {
+			if &file.path == path {
+				return true
+			}
+		}
+
+		false
+	}
 }
 
 
@@ -190,7 +195,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 				if file_path.exists() && file_path.is_file() {
 					let file_path: Path = fs::canonicalize(&arg)?.to_str().unwrap().to_string();
 
-					if is_file_open_in_tabs(&app, &file_path) {
+					if app.is_file_open_in_tabs(&file_path) {
 						continue;
 					} 
 					
