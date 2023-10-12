@@ -125,31 +125,30 @@ impl App {
 
 		false
 	}
-}
 
+	fn load_opened_files_in_app_buffer(&mut self) {
+		let default_paths = Paths::default();
 
-fn load_opened_files_in_app_buffer(app: &mut App) {
-	let default_paths = Paths::default();
+		make_config_file_if_not_exist(&default_paths);
+		
+		let paths = fs::read_dir(&default_paths.config_opened_files_path).unwrap();
+		
+		for path in paths {
+			let config_file_data = read_file(&path.unwrap().path().to_str().unwrap().to_string());
 
-	make_config_file_if_not_exist(&default_paths);
-	
-	let paths = fs::read_dir(&default_paths.config_opened_files_path).unwrap();
-	
-	for path in paths {
-		let config_file_data = read_file(&path.unwrap().path().to_str().unwrap().to_string());
+			let path_to_file = config_file_data.get(PATH_IN_CONFIG_AT_VEC).unwrap();
+			let scroll_of_file = config_file_data.get(SCROLL_IN_CONFIG_AT_VEC).unwrap() 
+				.split('=')
+				.collect::<Vec::<&str>>()
+				.get(1)
+				.unwrap()
+				.parse::<LineNumber>()
+				.unwrap();
 
-		let path_to_file = config_file_data.get(PATH_IN_CONFIG_AT_VEC).unwrap();
-		let scroll_of_file = config_file_data.get(SCROLL_IN_CONFIG_AT_VEC).unwrap() 
-			.split('=')
-			.collect::<Vec::<&str>>()
-			.get(1)
-			.unwrap()
-			.parse::<LineNumber>()
-			.unwrap();
+			let file = File::new_from_config(&path_to_file, scroll_of_file);
 
-		let file = File::new_from_config(&path_to_file, scroll_of_file);
-
-		app.add_complete_file(&file);
+			self.add_complete_file(&file);
+		}
 	}
 }
 
@@ -170,7 +169,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 	let mut app = App::new();
 
-	load_opened_files_in_app_buffer(&mut app);
+	app.load_opened_files_in_app_buffer();
 
 	if args.len() == 1 && number_of_opened_files() == 0 {
 		print_help();
