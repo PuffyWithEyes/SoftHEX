@@ -133,12 +133,6 @@ where B: Backend {
 							app.open_file_wth_ui();							
 						},
 						KeyCode::Backspace => {
-							let file = app.get_current_file_mut();
-							file.find_text.pop();
-						},
-						KeyCode::Char(symbol) => {
-							let file = app.get_current_file_mut();
-							file.find_text.push(symbol);
 							app.open_file_text.pop();
 						},
 						KeyCode::Char(symbol) => {
