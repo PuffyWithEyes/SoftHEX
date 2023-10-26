@@ -18,6 +18,39 @@ pub struct Paths {
 }
 
 
+pub type HEX = u8;
+pub type Path = String;
+pub type LineNumber = u16;
+type LineCounter = u16;
+pub type ColumnCounter = u16;
+
+
+const CONFIG_EXTENSION: &str = ".conf";
+const START_ASCII_PRINTABLE: u8 = 0x20;
+const END_ASCII_PRINTABLE: u8 = 0xFF;
+const LINE_NUMBER: u16 = 1_u16;
+const START_LINE: u16 = u16::MIN;
+pub const START_HEX_LINE: u16 = 8_u16;
+pub const START_HEX_COLUMN: u16 = 4_u16;
+
+
+#[derive(Clone)]
+pub struct CurCurPos {
+	pub x: LineCounter,
+	pub y: ColumnCounter,
+}
+
+
+impl Default for CurCurPos {
+	fn default() -> Self {
+		CurCurPos {
+			x: START_HEX_COLUMN,
+			y: START_HEX_LINE,
+		}
+	}
+}
+
+
 impl Default for Paths {
 	fn default() -> Self {
 		let mut home_dir = env::home_dir().unwrap().to_str().unwrap().to_string();
@@ -45,19 +78,6 @@ impl Default for Paths {
 }
 
 
-pub type HEX = u8;
-pub type Path = String;
-pub type LineNumber = u16;
-type LineCounter = u16;
-
-
-const CONFIG_EXTENSION: &str = ".conf";
-const START_ASCII_PRINTABLE: u8 = 0x20;
-const END_ASCII_PRINTABLE: u8 = 0xFF;
-const LINE_NUMBER: u16 = 1_u16;
-const START_LINE: u16 = u16::MIN;
-
-
 #[derive(Clone)]
 pub enum FileState {
     Normal,
@@ -79,6 +99,7 @@ pub struct File {
     pub find_text: String,
     pub file_mode: FileState,
 	conf_path: Path,
+	pub curr_point: CurCurPos,
 }
 
 
@@ -133,6 +154,7 @@ impl File {
 				find_text: String::new(),
 				file_mode: FileState::Normal,
 				conf_path: path_of_conf_file,
+				curr_point: CurCurPos::default(), 
 			},
 			IsOpen::No(data_of_file) => {
 				let mut new_file = File {
@@ -144,6 +166,7 @@ impl File {
 					find_text: String::new(),
 					file_mode: FileState::Normal,
 					conf_path: data_of_file.path,
+					curr_point: CurCurPos::default(),
 				};
 
 				move_to_opened(&mut new_file);

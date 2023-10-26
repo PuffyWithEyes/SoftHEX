@@ -1,4 +1,10 @@
-use crate::{App, files::FileState};
+use crate::{
+	App,
+	files::{
+		FileState,
+		ColumnCounter,
+	},
+};
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Alignment},
@@ -9,9 +15,6 @@ use tui::{
 };
 use unicode_width::UnicodeWidthStr;
 use std::env;
-
-
-type ColumnCounter = u16;
 
 
 const RED_FOR_PINK: u8 = 255_u8;
@@ -169,7 +172,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .scroll((file.scroll, 0));
             f.render_widget(paragraph, main_chunks[1]);
 			
-			let mut curr_dir = String::from("Open file (");
+			let mut curr_dir = String::from("Open file (Current directory: ");
 			let full_path = match env::current_dir() {
 				Ok(path) => path.canonicalize().unwrap().to_str().unwrap().to_string(),
 				Err(_) => String::from("Enter full path"),
@@ -184,6 +187,53 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 			f.set_cursor(
 				main_chunks[2].x + app.open_file_text.width() as ColumnCounter + 1,
 				main_chunks[2].y + 1,
+			);
+		},
+		FileState::EditingHex => {
+			let main_chunks = Layout::default()
+				.direction(Direction::Vertical)
+				.margin(2)
+				.constraints([
+					Constraint::Length(3), Constraint::Min(0),
+				].as_ref())
+				.split(f.size());
+
+			let titles = app
+				.tabs_titles
+				.iter()
+				.map(|t| {
+					Spans::from(vec![
+						Span::styled(t, Style::default().fg(Color::Rgb(
+							RED_FOR_PINK,
+							GREEN_FOR_PINK,
+							BLUE_FOR_PINK,
+						))),
+					])
+				})
+				.collect();
+			
+			let tabs = Tabs::new(titles)
+				.block(Block::default().borders(Borders::ALL).title("Tabs"))
+				.select(app.current_index)
+				.highlight_style(
+					Style::default()
+						.add_modifier(Modifier::BOLD)
+						.bg(Color::Black),
+				);
+			f.render_widget(tabs, main_chunks[0]);
+
+			let file = app.get_current_file();
+
+            let paragraph = Paragraph::new(file.hex_data)
+                .block(create_block("HEX", Alignment::Center))
+                .alignment(Alignment::Left)
+                .wrap(Wrap { trim: true })
+                .scroll((file.scroll, 0));
+            f.render_widget(paragraph, main_chunks[1]);
+
+			f.set_cursor(
+				file.curr_point.x,
+				file.curr_point.y,
 			);
 		},
 		_ => {},                                 

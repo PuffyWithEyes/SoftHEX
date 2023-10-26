@@ -150,6 +150,30 @@ impl App {
 			self.add_complete_file(&file);
 		}
 	}
+
+	fn next_cur_hor(&mut self) {
+		self.get_current_file_mut().curr_point.x += 1;
+	}
+
+	fn prev_cur_hor(&mut self) {
+		let file = self.get_current_file_mut();
+
+		if file.curr_point.x != 0 {
+			file.curr_point.x -= 1;
+		}
+	}
+
+	fn down_cur_ver(&mut self) {
+		self.get_current_file_mut().curr_point.y += 1;
+	}
+
+	fn up_cur_ver(&mut self) {
+		let file = self.get_current_file_mut();
+
+		if file.curr_point.y != 0 {
+			file.curr_point.y -= 1;
+		}
+	}
 }
 
 

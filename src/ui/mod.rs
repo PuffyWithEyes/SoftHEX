@@ -67,7 +67,7 @@ where B: Backend {
 						},
 						KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Char('с') | KeyCode::Char('С') => {
 							app.close_current_tab();
-							
+
 							if app.opened_files.len() == 0 {								
 								return Ok(());
 							}
@@ -118,7 +118,25 @@ where B: Backend {
 					todo!("Сделать сам поиск")
 				},
 				FileState::EditingHex => {
-					todo!("Сделать изменение hex текста")
+					match key.code {
+						KeyCode::Right => {
+							app.next_cur_hor();
+						},
+						KeyCode::Left => {
+							app.prev_cur_hor();
+						},
+						KeyCode::Down => {
+							app.down_cur_ver();
+						},
+						KeyCode::Up => {
+							app.up_cur_ver();
+						},
+						KeyCode::Esc => {
+							let file = app.get_current_file_mut();
+							file.file_mode = FileState::Normal;
+						},
+						_ => {},
+					}
 				},
 				FileState::Saved => {
 					todo!("Сделать уведомление о том, что успешно было сохранено")
@@ -143,7 +161,7 @@ where B: Backend {
 						},
 						KeyCode::Right => {
 							app.next_tab();
-						},
+						},		
 						_ => {},
 					}
 				},
